@@ -1,0 +1,8 @@
+// src/supabaseClient.js
+import { createClient } from '@supabase/supabase-js';
+
+// ВСТАВЬ СВОИ ДАННЫЕ ИЗ SUPABASE API SETTINGS
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);

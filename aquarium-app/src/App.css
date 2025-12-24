@@ -1,0 +1,181 @@
+/* src/App.css */
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f0f4f8;
+  /* Soft minimalist background */
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+}
+
+.aquarium-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0%, #eef2f5 100%);
+}
+
+.connections-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.connection-line {
+  stroke-linecap: round;
+  transition: all 0.5s ease;
+  opacity: 0.6;
+}
+
+/* --- CARD / BLOB STYLES --- */
+.card-body {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* Soft springy transition */
+  overflow: hidden;
+  background: white;
+  z-index: 10;
+}
+
+/* BLOB ANIMATION (Lava Lamp) */
+@keyframes blob-shift {
+  0% {
+    border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
+  }
+
+  33% {
+    border-radius: 70% 30% 30% 70% / 50% 60% 40% 50%;
+  }
+
+  66% {
+    border-radius: 30% 70% 70% 30% / 40% 40% 60% 50%;
+  }
+
+  100% {
+    border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
+  }
+}
+
+/* Student: Organic Blob Shape when collapsed */
+.card-body.student:not(.expanded) {
+  animation: blob-shift 8s infinite linear;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  /* Soft pastel gradient */
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  backdrop-filter: blur(4px);
+  /* Ensure text is visible in blob */
+  color: #555;
+  font-weight: bold;
+}
+
+/* Student: Expanded */
+.card-body.student.expanded {
+  border-radius: 20px !important;
+  animation: none;
+  background: #fff;
+  z-index: 9999;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eee;
+}
+
+/* Visitor: Heavier, rounder, but distinct */
+.card-body.visitor {
+  border-radius: 50%;
+  /* Perfect circle for "heavy" rock feel */
+  background: #ffffff;
+  border: 4px solid #FF0000;
+  /* Distinct border as requested previously, or minimalist? Keeping red for visibility */
+  z-index: 50;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.card-body.visitor.expanded {
+  border-radius: 20px !important;
+  z-index: 10000;
+}
+
+
+/* Typography & Inner Layout */
+.blob-name {
+  font-size: 0.8rem;
+  text-align: center;
+  pointer-events: none;
+  padding: 5px;
+  line-height: 1.2;
+}
+
+.expanded-content {
+  width: 100%;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards 0.3s;
+  /* Delay fade in until expansion finishes */
+  text-align: left;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.profile-graph {
+  margin-top: 15px;
+  width: 100%;
+}
+
+.axis-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.axis-label {
+  font-size: 0.75rem;
+  color: #555;
+  width: 40px;
+  text-align: right;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.bar-container {
+  flex: 1;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #66a6ff 0%, #ff9a9e 100%);
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+
+/* Status Bubble override */
+.status-bubble {
+  background: #333 !important;
+  color: #fff !important;
+  font-family: inherit;
+  border: none !important;
+}
+
+.fading-bubble {
+  opacity: 0.5;
+}

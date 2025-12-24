@@ -1,0 +1,192 @@
+/* src/App.css */
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: #fdfdfd; 
+  color: #333;
+}
+
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.card {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  padding: 40px 24px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+p {
+  color: #666;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+/* Input Group for Start Screen */
+.input-group {
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+.text-input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.text-input:focus {
+  border-color: #333;
+}
+
+/* Question Screen */
+.header-row {
+  margin-bottom: 40px;
+  text-align: left;
+  width: 100%;
+}
+
+.header-row h2 {
+  font-size: 16px;
+  color: #333;
+  margin: 0;
+  font-weight: bold;
+}
+
+.question-text {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 60px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* 5 Circles UI */
+.selection-container {
+  width: 100%;
+  margin-bottom: 60px;
+}
+
+.circles-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 10px;
+}
+
+.circle-option {
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-style: dotted;
+  border-width: 3px;
+}
+
+/* Sizes */
+.option-0, .option-4 { width: 64px; height: 64px; } /* Big */
+.option-1, .option-3 { width: 52px; height: 52px; } /* Medium */
+.option-2 { width: 44px; height: 44px; }           /* Small */
+
+/* Colors & Borders */
+/* Left (0, 1): Redish */
+.option-0, .option-1 {
+  border-color: #ff6b6b;
+}
+/* Middle (2): Grey */
+.option-2 {
+  border-color: #adb5bd;
+}
+/* Right (3, 4): Greenish */
+.option-3, .option-4 {
+  border-color: #51cf66;
+}
+
+/* Selected State */
+.circle-option.selected {
+  border-style: solid;
+  transform: scale(1.1);
+}
+
+.option-0.selected, .option-1.selected { background-color: rgba(255, 107, 107, 0.1); }
+.option-2.selected { background-color: rgba(173, 181, 189, 0.1); }
+.option-3.selected, .option-4.selected { background-color: rgba(81, 207, 102, 0.1); }
+
+
+/* Labels */
+.labels-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 8px;
+}
+
+/* Buttons */
+.button-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.start-btn, .next-btn, .back-btn {
+  border: none;
+  padding: 16px 32px;
+  font-size: 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.start-btn, .next-btn {
+  background: #000;
+  color: #fff;
+}
+
+.back-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.start-btn:disabled, .next-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Ensure buttons take equal width in row */
+.button-row button {
+  flex: 1;
+}
