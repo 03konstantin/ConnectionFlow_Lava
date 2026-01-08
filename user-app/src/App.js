@@ -6,7 +6,7 @@ import './App.css';
 // --- CONFIGURATION ---
 // Set this to 'STUDENT' to register students (saves to student_cards)
 // Set this to 'VISITOR' for event mode (saves to visitor_cards)
-const APP_MODE = 'STUDENT';
+const APP_MODE = 'VISITOR';
 // ---------------------
 
 function App() {
@@ -248,7 +248,7 @@ function App() {
           </button>
 
           <div style={{ marginTop: '20px', fontSize: '10px', color: '#ccc' }}>
-            MODE: {APP_MODE}
+            MODE: {APP_MODE} (v2)
           </div>
         </div>
       </div>
