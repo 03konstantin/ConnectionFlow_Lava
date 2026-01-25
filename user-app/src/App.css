@@ -1,11 +1,13 @@
 /* src/App.css */
-body, html, #root {
+body,
+html,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-  background: #fdfdfd; 
+  background: #fdfdfd;
   color: #333;
 }
 
@@ -18,13 +20,19 @@ body, html, #root {
 }
 
 .card {
-  background: white;
+  background: rgba(255, 255, 255, 0.85);
   width: 90%;
   max-width: 500px;
+  height: 550px;
+  /* Fixed height! */
   padding: 40px 24px;
   border-radius: 20px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .center-content {
@@ -32,17 +40,50 @@ body, html, #root {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: auto;
+  /* Allow override */
 }
 
 h1 {
   font-size: 24px;
   margin-bottom: 16px;
+  font-weight: bold;
 }
 
 p {
-  color: #666;
+  font-size: 14px;
+  color: #000;
   margin-bottom: 32px;
   line-height: 1.6;
+}
+
+/* Droplets for Title */
+.title-container {
+  position: relative;
+  display: inline-block;
+}
+
+.title-droplets {
+  position: absolute;
+  top: -15px;
+  right: -25px;
+  width: 30px;
+  height: 30px;
+  color: #6BD4E7;
+  /* Drop color */
+  animation: drop-bounce 2s infinite ease-in-out;
+}
+
+@keyframes drop-bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Input Group for Start Screen */
@@ -100,7 +141,9 @@ p {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  padding: 0 10px;
+  padding: 0px;
+  /* Reduced side padding to allow more width */
+  gap: 10px;
 }
 
 .circle-option {
@@ -113,21 +156,42 @@ p {
 }
 
 /* Sizes */
-.option-0, .option-4 { width: 64px; height: 64px; } /* Big */
-.option-1, .option-3 { width: 52px; height: 52px; } /* Medium */
-.option-2 { width: 44px; height: 44px; }           /* Small */
+.option-0,
+.option-4 {
+  width: 64px;
+  height: 64px;
+}
+
+/* Big */
+.option-1,
+.option-3 {
+  width: 52px;
+  height: 52px;
+}
+
+/* Medium */
+.option-2 {
+  width: 44px;
+  height: 44px;
+}
+
+/* Small */
 
 /* Colors & Borders */
 /* Left (0, 1): Redish */
-.option-0, .option-1 {
+.option-0,
+.option-1 {
   border-color: #ff6b6b;
 }
+
 /* Middle (2): Grey */
 .option-2 {
   border-color: #adb5bd;
 }
+
 /* Right (3, 4): Greenish */
-.option-3, .option-4 {
+.option-3,
+.option-4 {
   border-color: #51cf66;
 }
 
@@ -137,9 +201,19 @@ p {
   transform: scale(1.1);
 }
 
-.option-0.selected, .option-1.selected { background-color: rgba(255, 107, 107, 0.1); }
-.option-2.selected { background-color: rgba(173, 181, 189, 0.1); }
-.option-3.selected, .option-4.selected { background-color: rgba(81, 207, 102, 0.1); }
+.option-0.selected,
+.option-1.selected {
+  background-color: rgba(255, 107, 107, 0.1);
+}
+
+.option-2.selected {
+  background-color: rgba(173, 181, 189, 0.1);
+}
+
+.option-3.selected,
+.option-4.selected {
+  background-color: rgba(81, 207, 102, 0.1);
+}
 
 
 /* Labels */
@@ -159,7 +233,9 @@ p {
   width: 100%;
 }
 
-.start-btn, .next-btn, .back-btn {
+.start-btn,
+.next-btn,
+.back-btn {
   border: none;
   padding: 16px 32px;
   font-size: 16px;
@@ -171,8 +247,9 @@ p {
   transition: opacity 0.2s;
 }
 
-.start-btn, .next-btn {
-  background: #000;
+.start-btn,
+.next-btn {
+  background: #4C7CB5;
   color: #fff;
 }
 
@@ -181,7 +258,8 @@ p {
   color: #333;
 }
 
-.start-btn:disabled, .next-btn:disabled {
+.start-btn:disabled,
+.next-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
@@ -189,4 +267,398 @@ p {
 /* Ensure buttons take equal width in row */
 .button-row button {
   flex: 1;
+}
+
+/* Welcome Screen */
+.welcome-screen {
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.sea-section {
+  width: 100%;
+  height: 1%;
+  /* Reduced to move waves up */
+  background: linear-gradient(180deg, #53B0CE 0%, #6BD4E7 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.wave-container {
+  width: 100%;
+  position: absolute;
+  top: 1%;
+  /* Moved to near top */
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.sand-section {
+  width: 100%;
+  height: 75%;
+  /* Remainder */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  /* Yellow tint */
+  background-color: #fffae6;
+  background-blend-mode: multiply;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 140px;
+  /* Space for waves */
+}
+
+/* Adjust content positioning */
+.welcome-content {
+  z-index: 10;
+  text-align: center;
+  margin-top: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 20px;
+}
+
+.welcome-title {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.welcome-text {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 14px;
+  font-weight: 1000;
+  color: #000;
+  line-height: 3;
+  letter-spacing: 0.1em;
+}
+
+.welcome-start-btn {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background-color: #53B0CE;
+  border: 4px dotted #fff;
+  /* Dotted white border */
+  border-radius: 15px;
+  /* Rounded rectangle */
+  padding: 16px 0;
+  /* Vertical padding */
+  width: 90%;
+  /* Responsive width */
+  max-width: 320px;
+  /* Max width constraint */
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, background-color 0.2s;
+  box-sizing: border-box;
+  /* Include border in width */
+  margin-top: 20px;
+}
+
+.welcome-start-btn:hover {
+  transform: translateY(-2px);
+  background-color: #4aa3be;
+}
+
+/* Tutorial Screen specifics */
+.tutorial-screen {
+  position: relative;
+  overflow: hidden;
+  background: #fffae6;
+}
+
+.next-wave-container {
+  top: 0;
+  /* Align to top */
+  z-index: 5;
+  /* Ensure above sea/background */
+}
+
+.tutorial-content {
+  margin-top: 15%;
+  /* Adjusted from 50% to move content up */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 20;
+  /* Ensure on top of waves */
+}
+
+.carousel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.slide-image-wrapper {
+  width: 260px;
+  height: 260px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+}
+
+.slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.arrow-btn {
+  cursor: pointer;
+  padding: 10px;
+  transition: opacity 0.2s;
+}
+
+.arrow-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tutorial-text {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24px;
+  width: 80%;
+  line-height: 1.6;
+}
+
+.dots-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ccc;
+  transition: background-color 0.2s;
+}
+
+.dot.active {
+  background-color: #53B0CE;
+  width: 24px;
+  border-radius: 4px;
+  /* Long pill shape for active dot */
+}
+
+/* Specific start button override or reuse */
+.fade-in {
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Redesign Styles */
+.tutorial-screen-container {
+  /* Tutorial Background Gradient */
+  background: linear-gradient(#5BCACA, #60BAE0);
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Hide content when surging */
+.fade-out {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+/* Ensure animated waves are on top of sand but below content initially */
+/* But when surging, they cover everything. 
+   We handle this in WaveBackground.css with z-index.
+   Here we just ensure base layering is correct.
+*/
+.sand-section {
+  z-index: 1;
+  /* Lowest */
+}
+
+.welcome-content {
+  z-index: 10;
+  /* Above waves */
+  transition: opacity 0.3s;
+}
+
+/* Cloud Input Container */
+.cloud-input-container {
+  position: relative;
+  background: white;
+  padding: 50px 30px;
+  width: 85%;
+  max-width: 340px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Bumpy "Cloud" shape using radial gradients */
+  background-image:
+    radial-gradient(circle at 100% 100%, transparent 20px, #ffffff 20px),
+    radial-gradient(circle at 0% 100%, transparent 20px, #ffffff 20px),
+    radial-gradient(circle at 100% 0%, transparent 20px, #ffffff 20px),
+    radial-gradient(circle at 0% 0%, transparent 20px, #ffffff 20px);
+
+  /* Actually, let's use a border-radius based approach with a "Cloudy" look 
+      generated by multiple box-shadows or a clip-path. 
+      For robustness, I will use a simple heavily rounded card. 
+      If the user wants exact bumps, I'd need an image.
+      Let's use a very large border-radius to look "soft".
+   */
+  border-radius: 40px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Pseudo-elements for extra cloud bumps */
+.cloud-input-container::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  right: 20px;
+  height: 40px;
+  background: white;
+  border-radius: 50px;
+  z-index: 0;
+}
+
+.cloud-input-container::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 20px;
+  right: 20px;
+  height: 40px;
+  background: white;
+  border-radius: 50px;
+  z-index: 0;
+}
+
+.cloud-blobs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cloud-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/* Styles for the "Send" button */
+.send-btn {
+  margin-top: 40px;
+  background-color: #528BC5;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 15px 50px;
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 80%;
+  max-width: 250px;
+  transition: transform 0.1s;
+}
+
+.send-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.back-arrow-btn {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  z-index: 20;
+}
+
+.nickname-label {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.nickname-input {
+  border: none;
+  border-bottom: 2px dashed #999;
+  background: transparent;
+  font-size: 24px;
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  outline: none;
+  color: #555;
+  font-family: inherit;
+}
+
+.nickname-input::placeholder {
+  color: #ccc;
 }

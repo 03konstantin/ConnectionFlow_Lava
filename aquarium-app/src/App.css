@@ -16,7 +16,67 @@ html,
   width: 100%;
   height: 100%;
   position: relative;
-  background: radial-gradient(circle at 50% 50%, #ffffff 0%, #eef2f5 100%);
+  /* Deep Blue Sea: Darker for contrast with the light rays */
+  background: linear-gradient(180deg, #388EBB 0%, #1A4E66 100%);
+  overflow: hidden;
+}
+
+/* 1. SURFACE GLOW (The bright water surface) */
+.aquarium-container::before {
+  content: '';
+  position: absolute;
+  top: -150px;
+  left: -20%;
+  width: 140%;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, rgba(100, 216, 255, 0.3) 40%, transparent 70%);
+  filter: blur(20px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 2. DEFINED GOD RAYS (Distinct Beams) */
+.aquarium-container::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  /* Origin above screen */
+  left: -50%;
+  width: 200%;
+  height: 150%;
+
+  /* Distinct Strips of Light using Repeating Conic Gradient */
+  background: repeating-conic-gradient(from 180deg at 50% 0%,
+      /* Fan out from top center */
+      transparent 0deg,
+      transparent 2deg,
+      rgba(255, 255, 255, 0.15) 3deg,
+      /* The Ray */
+      rgba(255, 255, 255, 0.15) 5deg,
+      transparent 6deg,
+      transparent 10deg);
+
+  /* Mask to fade them out at the bottom and sides */
+  -webkit-mask-image: radial-gradient(circle at 50% 0%, black 10%, transparent 80%);
+  mask-image: radial-gradient(circle at 50% 0%, black 10%, transparent 80%);
+
+  transform-origin: 50% 0%;
+  animation: swayHighContrast 25s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: overlay;
+  filter: blur(2px);
+  /* Slight blur to remove aliasing but keep shape */
+}
+
+@keyframes swayHighContrast {
+  0% {
+    transform: rotate(-4deg) scale(1.1);
+  }
+
+  100% {
+    transform: rotate(4deg) scale(1.1);
+  }
 }
 
 .connections-layer {
@@ -26,7 +86,7 @@ html,
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 0;
+  z-index: 5;
 }
 
 .connection-line {
@@ -43,12 +103,34 @@ html,
   align-items: center;
   cursor: pointer;
   user-select: none;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  /* Soft springy transition */
-  overflow: hidden;
-  background: white;
+  overflow: visible;
   z-index: 10;
+}
+
+/* --- FADE OUT ANIMATION --- */
+.card-body.fading {
+  opacity: 0 !important;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: opacity 2s ease-out, transform 2s ease-out !important;
+}
+
+
+
+/* FLICKER ANIMATION (Warning) */
+.card-body.flickering {
+  animation: flicker 0.5s infinite alternate !important;
+}
+
+@keyframes flicker {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.4;
+  }
 }
 
 /* BLOB ANIMATION (Lava Lamp) */
@@ -73,50 +155,170 @@ html,
 /* Student: Organic Blob Shape when collapsed */
 .card-body.student:not(.expanded) {
   animation: blob-shift 8s infinite linear;
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  /* Soft pastel gradient */
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-  backdrop-filter: blur(4px);
-  /* Ensure text is visible in blob */
-  color: #555;
+  background: radial-gradient(circle, #598BD3 20%, #60BBE1 100%);
+  box-shadow:
+
+    inset 0 0 10px rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(1px);
+  color: #ececec;
   font-weight: bold;
+  font-size: 0.63rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Student: Expanded */
-.card-body.student.expanded {
-  border-radius: 20px !important;
-  animation: none;
-  background: #fff;
-  z-index: 9999;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-  border: 1px solid #eee;
+.card-body.student.variant-1 {
+  animation-name: blob-shift;
 }
 
-/* Visitor: Heavier, rounder, but distinct */
+.card-body.student.variant-2 {
+  animation-name: blob-shift-2;
+}
+
+.card-body.student.variant-3 {
+  animation-name: blob-shift-3;
+}
+
+.card-body.student.variant-4 {
+  animation-name: blob-shift-4;
+}
+
+@keyframes blob-shift-2 {
+
+  0%,
+  100% {
+    border-radius: 70% 30% 30% 70% / 60% 40% 60% 40%;
+  }
+
+  50% {
+    border-radius: 30% 70% 70% 30% / 50% 60% 40% 50%;
+  }
+}
+
+@keyframes blob-shift-3 {
+
+  0%,
+  100% {
+    border-radius: 73% 27% 20% 80% / 25% 80% 20% 75%;
+  }
+
+  50% {
+    border-radius: 20% 80% 60% 40% / 60% 30% 70% 40%;
+  }
+}
+
+@keyframes blob-shift-4 {
+
+  0%,
+  100% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+
+  50% {
+    border-radius: 80% 20% 40% 60% / 60% 60% 30% 40%;
+  }
+}
+
+
+
+/* --- VISITOR (USER) STYLE: YAHOO FLUID LAYERED EFFECT --- */
 .card-body.visitor {
-  border-radius: 50%;
-  /* Perfect circle for "heavy" rock feel */
-  background: #ffffff;
-  border: 4px solid #FF0000;
-  /* Distinct border as requested previously, or minimalist? Keeping red for visibility */
+  background: transparent;
+  border: none;
   z-index: 50;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* NEW: Add Glow for Visitor too */
+  /* We apply it here on the container, or on the layers? 
+     If we apply here, it might be boxy if not clipped. 
+     The layers have radius. Let's apply a drop-shadow filter to the container! */
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
 }
 
 .card-body.visitor.expanded {
+  background: #fff;
   border-radius: 20px !important;
   z-index: 10000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  filter: none;
 }
 
+/* The Layered Blob Container */
+.visitor-blob-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.v-blob-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  opacity: 0.8;
+  animation: blob-shift 6s infinite ease-in-out;
+}
+
+/* Colors for the Layers */
+.v-blob-layer:nth-child(1) {
+  background: linear-gradient(135deg, #C7339D 0%, #E18B60 100%);
+  /* Top Layer */
+  transform: rotate(0deg);
+  animation-delay: 0s;
+}
+
+.v-blob-layer:nth-child(2) {
+  background: linear-gradient(135deg, #5970D3 0%, #A060E1 100%);
+  /* Middle Layer */
+  transform: rotate(60deg) scale(0.9);
+  animation-duration: 8s;
+  animation-direction: reverse;
+  mix-blend-mode: hard-light;
+}
+
+.v-blob-layer:nth-child(3) {
+  background: linear-gradient(135deg, #D3595F 0%, #D3CD59 100%);
+  /* Bottom Layer */
+  transform: rotate(120deg) scale(0.85);
+  animation-duration: 7s;
+  mix-blend-mode: overlay;
+}
+
+.v-blob-layer:nth-child(4) {
+  /* NEW 4th Layer: Light White Shimmer or Yellow */
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, transparent 70%);
+  transform: rotate(180deg) scale(0.6);
+  animation-duration: 5s;
+  filter: blur(8px);
+}
+
+.visitor-content-inner {
+  position: relative;
+  z-index: 10;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  text-align: center;
+}
 
 /* Typography & Inner Layout */
 .blob-name {
   font-size: 0.8rem;
   text-align: center;
   pointer-events: none;
-  padding: 5px;
-  line-height: 1.2;
+  padding: 20px;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .expanded-content {
@@ -178,4 +380,161 @@ html,
 
 .fading-bubble {
   opacity: 0.5;
+}
+
+/* --- RECEIPT STYLING (HIDDEN ON SCREEN) --- */
+.receipt-container {
+  display: none;
+  /* Hide by default on screen */
+}
+
+@media print {
+
+  /* HIDE EVERYTHING ELSE */
+  .aquarium-container,
+  .connections-layer,
+  .card-body {
+    display: none !important;
+  }
+
+  /* SHOW RECEIPT */
+  .receipt-container {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 99999;
+  }
+
+  /* PAPER SETUP - 80mm width standard */
+  /* Browsers handle 80mm printers by treating width as ~72mm printable or fitting to page */
+  /* We use simple block layout */
+
+  @page {
+    margin: 0;
+    size: auto;
+    /* Allow printer driver to handle size */
+  }
+
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .receipt {
+    width: 100%;
+    /* Will fill the 80mm paper width */
+    max-width: 80mm;
+    /* Constraint just in case */
+    padding: 5px 10px;
+    /* Small padding */
+    font-family: 'Courier New', monospace;
+    /* Monospaced looks like generic receipt */
+    font-size: 14px;
+    line-height: 1.4;
+    color: black;
+  }
+
+  .r-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .r-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .r-header h3 {
+    margin: 5px 0 0 0;
+    font-size: 16px;
+  }
+
+  .r-header p {
+    margin: 2px 0;
+    color: black;
+    font-size: 12px;
+  }
+
+  .r-divider {
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 5px 0;
+    font-weight: bold;
+  }
+
+  .r-body {
+    margin-top: 10px;
+  }
+
+  .r-row {
+    display: flex;
+    margin-bottom: 10px;
+    align-items: center;
+    border-bottom: 1px dashed #ddd;
+    /* Separator */
+    padding-bottom: 5px;
+  }
+
+  .r-left-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    min-width: 50px;
+    border-right: 2px solid #333;
+    /* Divider line */
+    padding-right: 8px;
+  }
+
+  .r-rank {
+    font-size: 10px;
+    font-weight: normal;
+    margin-right: 0;
+    color: #666;
+  }
+
+  .r-percent {
+    font-size: 20px;
+    font-weight: 900;
+    /* Extra bold */
+  }
+
+  .r-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .r-name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+
+  .r-num {
+    font-size: 12px;
+    color: #444;
+  }
+
+  .r-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    padding-bottom: 20px;
+    /* End buffer */
+  }
+
+  .r-tiny {
+    font-size: 10px;
+    margin-top: 10px;
+    color: #555;
+  }
 }

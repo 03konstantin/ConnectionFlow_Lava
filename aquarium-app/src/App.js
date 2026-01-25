@@ -4,11 +4,12 @@ import { supabase } from './supabaseClient';
 import './App.css';
 import { NotificationStack } from './NotificationStack';
 import { semanticMatcher } from './SemanticMatcher';
+import visitorIcon from './visitor_icon.png';
 
 // 🔥 CONFIGURATION 🔥
 // const MATCH_THRESHOLD = 0.0; // Unused currently
 
-const { Engine, Runner, World, Bodies, Body, Vector, Events } = Matter;
+const { Engine, Runner, World, Bodies, Body, Vector, Events, Mouse, MouseConstraint } = Matter;
 
 const QUESTION_MAP = {
   'cooking_emphasis': '料理は、作り方より見た目を重視する',
@@ -17,6 +18,42 @@ const QUESTION_MAP = {
   'social_planning': '遊びの予定は、当日や前日の急なお誘いでも嬉しい',
   'messaging_urgency': 'メッセージが来たら、すぐに返信しないと落ち着かない'
 };
+
+// Helper: Tiered Selection (Best matches, minimum 3)
+function selectActiveMatches(allMatches) {
+  if (!allMatches || allMatches.length === 0) return [];
+
+  // Group by score
+  const byScore = { 5: [], 4: [], 3: [], 2: [], 1: [] };
+  allMatches.forEach(m => {
+    if (byScore[m.matchCount]) byScore[m.matchCount].push(m);
+  });
+
+  let active = [];
+
+  // Iterate from top score down
+  for (let s = 5; s >= 1; s--) {
+    const tier = byScore[s];
+    if (tier && tier.length > 0) {
+      // Logic:
+      // 1. If we have nothing yet, take the ENTIRE top tier (even if > 3)
+      if (active.length === 0) {
+        active = active.concat(tier);
+      }
+      // 2. If we have some but < 3, fill the gap
+      else if (active.length < 3) {
+        const needed = 3 - active.length;
+        // Take standard slice (arbitrary tie-break by ID/order is fine)
+        active = active.concat(tier.slice(0, needed));
+      }
+      // 3. If we already have >= 3, stop looking at lower tiers
+      else {
+        break;
+      }
+    }
+  }
+  return active;
+}
 
 function App() {
   const sceneRef = useRef(null);
@@ -39,20 +76,89 @@ function App() {
 
   // Interaction State
   const [expandedId, setExpandedId] = useState(null);
+  const [draggingId, setDraggingId] = useState(null); // Track dragging for hiding lines
+  const isDraggingRef = useRef(false); // Ref for immediate logic outside render loop
+  const draggingIdRef = useRef(null); // Ref for render loop access
+  const lastClickRef = useRef({}); // Track click times for manual double-click
+
+  // PRINTING STATE
+  const [printingVisitor, setPrintingVisitor] = useState(null);
+  const [matchedStudents, setMatchedStudents] = useState([]);
 
   // =================================================================
+  // 🖨️ PRINTING LOGIC
+  // =================================================================
+  const handlePrintRequest = async (visitor) => {
+    // 1. Check if matches exist
+    if (!visitor.scores || visitor.scores.length === 0) {
+      addNotification('Printer', 'マッチングデータがまだありません。', 'info');
+      return;
+    }
+
+    setPrintingVisitor(visitor);
+
+    // 2. Fetch Student Details
+    // 2. Fetch Student Details
+    console.log('Printing for:', visitor.visitor_name, visitor.scores);
+
+    let activeMatches = selectActiveMatches(visitor.scores);
+
+    // Fallback if tiered selection returns nothing but we have scores
+    if ((!activeMatches || activeMatches.length === 0) && visitor.scores.length > 0) {
+      console.warn('Tiered selection returned empty. Falling back to simple sort.');
+      activeMatches = visitor.scores;
+    }
+
+    // Sort these active matches by score descending
+    const topMatches = activeMatches.sort((a, b) => b.matchCount - a.matchCount).slice(0, 10); // increased limit
+    const studentIds = topMatches.map(m => m.student_id);
+
+    console.log('Fetching students:', studentIds);
+
+    const { data: students, error } = await supabase
+      .from('student_cards')
+      .select('id, student_name, student_number')
+      .in('id', studentIds);
+
+    if (error || !students) {
+      console.error('Student fetch error:', error);
+      addNotification('Printer', '学生データの取得に失敗しました', 'error');
+      setPrintingVisitor(null);
+      return;
+    }
+
+    // Merge score data with student details
+    const finalData = topMatches.map((match, index) => {
+      const details = students.find(s => s.id === match.student_id);
+      return {
+        rank: index + 1,
+        name: details?.student_name || 'Unknown Student',
+        number: details?.student_number || '---',
+        id: match.student_id,
+        similarity: match.similarity || 0 // Pass similarity
+      };
+    });
+
+    console.log('Final Print Data:', finalData);
+    setMatchedStudents(finalData);
+
+    // 3. Trigger Print after render
+    setTimeout(() => {
+      window.print();
+    }, 1000); // 1s wait to ensure re-render
+  };
+
   // 🧠 NOTIFICATION LOGIC
   // =================================================================
   const addNotification = (title, message, type = 'info') => {
+    // ... same ...
     const id = Date.now() + Math.random();
     setNotifications(prev => {
-      // Simple debounce/limit: keep max 5
       const newStack = [...prev, { id, title, message, type }];
       if (newStack.length > 5) return newStack.slice(newStack.length - 5);
       return newStack;
     });
 
-    // Auto remove after 5s
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
@@ -65,8 +171,74 @@ function App() {
     semanticMatcher.init();
   }, []);
 
+  // --- CARD LIFECYCLE MANAGEMENT (FADE OUT) ---
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      const now = Date.now();
+      const FADE_THRESHOLD = 90 * 1000; // 1.5 minutes (90s)
+      const WARN_THRESHOLD = 80 * 1000; // Warning at 80s (10s before exp)
+
+      setCards(prevCards => {
+        let changed = false;
+        const newMap = new Map(prevCards);
+
+        newMap.forEach((body, key) => {
+          if (body.cardData.type !== 'visitor') return;
+          if (body.isFading) return; // Already fading
+
+          // IMMUTABLE EXPIRATION: Use DB creation time
+          // If created_at is missing, fallback to now (new cards) or createdAt prop
+          let birthTime = 0;
+          if (body.cardData.created_at) {
+            birthTime = new Date(body.cardData.created_at).getTime();
+          } else {
+            birthTime = body.cardData.createdAt || 0; // Fallback
+          }
+
+          const age = now - birthTime;
+
+          // Debug Expiration
+          // console.log(`Card ${body.cardData.visitor_name}: Age ${Math.floor(age/1000)}s`);
+
+          // WARNING: Flicker before expiration
+          if (age > WARN_THRESHOLD && age < FADE_THRESHOLD) {
+            if (!body.isFlickering) {
+              body.isFlickering = true;
+              changed = true;
+            }
+          }
+
+          if (age > FADE_THRESHOLD) {
+            // Start Fading
+            body.isFlickering = false; // Stop flicker, start fade
+            body.isFading = true;
+            changed = true;
+
+            // Schedule removal
+            setTimeout(async () => {
+              World.remove(engineRef.current.world, body);
+              setCards(current => {
+                const updated = new Map(current);
+                updated.delete(key);
+                return updated;
+              });
+              // DELETE FROM DB
+              await supabase.from('visitor_cards').delete().eq('id', body.cardData.id);
+              console.log('Expired and deleted card:', body.cardData.visitor_name);
+            }, 2000); // 2s Fade duration
+          }
+        });
+
+        return changed ? newMap : prevCards;
+      });
+    }, 2000); // Check every 2s for responsiveness
+
+    return () => clearInterval(checkInterval);
+  }, []);
+
   // --- PHYSICS ENGINE ---
   useEffect(() => {
+    // ... (Physic setup code stays same) ...
     const engine = engineRef.current;
 
     // ZERO GRAVITY (Lava Lamp)
@@ -92,6 +264,40 @@ function App() {
       Bodies.rectangle(W + T / 2, H / 2, T, H + 2 * T, wallOptions) // RIGHT
     ]);
 
+
+    // MOUSE CONTROL (Drag & Drop)
+    const mouse = Mouse.create(sceneRef.current);
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 0.2,
+        render: { visible: false }
+      }
+    });
+    World.add(engine.world, mouseConstraint);
+
+    // DRAG EVENTS
+    // DRAG EVENTS
+    // DRAG EVENTS
+    Events.on(mouseConstraint, 'startdrag', (event) => {
+      isDraggingRef.current = true;
+      const body = event.body;
+      if (body && body.dbId) {
+        if (body.cardData?.type === 'visitor') {
+          setDraggingId(body.cardData.id);
+          draggingIdRef.current = body.cardData.id;
+        }
+      }
+    });
+
+    Events.on(mouseConstraint, 'enddrag', () => {
+      isDraggingRef.current = false;
+      setDraggingId(null);
+      draggingIdRef.current = null;
+    });
+
+    // PHYSICS LOOP
+
     // PHYSICS LOOP
     Events.on(engine, 'beforeUpdate', () => {
       const allBodies = engine.world.bodies;
@@ -104,6 +310,7 @@ function App() {
 
         // --- 1. VISITOR PHYSICS ---
         if (isVisitor) {
+          // ... (visitor physics same) ...
           Body.setAngle(body, 0);
           Body.setAngularVelocity(body, 0);
 
@@ -113,125 +320,144 @@ function App() {
           otherVisitors.forEach(other => {
             const vec = Vector.sub(body.position, other.position);
             const dist = Vector.magnitude(vec);
-            if (dist < 500) {
-              const force = 2.0 / (dist + 1);
+            if (dist < 600) {
+              const force = 5.0 / (dist + 1); // Increased force
               Body.applyForce(body, body.position, Vector.mult(Vector.normalise(vec), force));
             }
           });
 
-          // Gentle Centering if very far
+          // Gentle Centering if very far (Allow roaming up to 90% of screen)
           const center = { x: W / 2, y: H / 2 };
           const distToCenter = Vector.magnitude(Vector.sub(body.position, center));
-          if (distToCenter > Math.min(W, H) * 0.4) {
-            Body.applyForce(body, body.position, Vector.mult(Vector.normalise(Vector.sub(center, body.position)), 0.0002));
+          if (distToCenter > Math.min(W, H) * 0.9) {
+            Body.applyForce(body, body.position, Vector.mult(Vector.normalise(Vector.sub(center, body.position)), 0.00015));
           }
         }
 
         // --- 2. STUDENT PHYSICS (THE SWARM) ---
         if (isStudent) {
+          // ... (student physics same) ...
           // A. CONSTANT WANDER (The "Life" force)
           if (!body.wanderAngle) body.wanderAngle = Math.random() * Math.PI * 2;
-          body.wanderAngle += (Math.random() - 0.5) * 0.1;
 
-          const wanderForceMag = 0.00004;
+          // Smoother, continuous turning (Lava lamp blobs don't jitter, they flow)
+          // REDUCED TURNING (0.08 -> 0.02): They keep direction longer to cross the screen
+          body.wanderAngle += (Math.random() - 0.5) * 0.02;
+
+          // Constant gentle drive - SUPERCHARGED for full-tank traversal
+          // High frictionAir (0.035) requires strong force to move long distances
+          const wanderForceMag = 0.02;
+          // Steering: Avoid Walls actively
+          // If we hit a wall, we shouldn't just push back, we should TURN our swimming direction away.
+          // Reduced margin to 60 (was 150) so they can touch/bump the wall before turning.
+          const margin = 60;
+          const turnSpeed = 0.15; // Faster turn since we are closer
+
+          // Left Wall
+          if (body.position.x < margin && Math.cos(body.wanderAngle) < 0) {
+            body.wanderAngle += turnSpeed; // Turn Right
+          }
+          // Right Wall
+          if (body.position.x > W - margin && Math.cos(body.wanderAngle) > 0) {
+            body.wanderAngle += turnSpeed; // Turn (this will cycle round)
+          }
+          // Top Wall
+          if (body.position.y < margin && Math.sin(body.wanderAngle) < 0) {
+            body.wanderAngle += turnSpeed;
+          }
+          // Bottom Wall
+          if (body.position.y > H - margin && Math.sin(body.wanderAngle) > 0) {
+            body.wanderAngle += turnSpeed;
+          }
+
+          // CORNER KICK (Prevent corner traps)
+          // Reduced to 80 (was 100)
+          if (body.position.x < 80 && body.position.y < 80) body.wanderAngle = Math.PI * 0.25; // Top-Left -> Go SouthEast
+          if (body.position.x > W - 80 && body.position.y < 80) body.wanderAngle = Math.PI * 0.75; // Top-Right -> Go SouthWest
+          if (body.position.x < 80 && body.position.y > H - 80) body.wanderAngle = Math.PI * 1.75; // Btm-Left -> Go NorthEast
+          if (body.position.x > W - 80 && body.position.y > H - 80) body.wanderAngle = Math.PI * 1.25; // Btm-Right -> Go NorthWest
+
           Body.applyForce(body, body.position, {
             x: Math.cos(body.wanderAngle) * wanderForceMag,
             y: Math.sin(body.wanderAngle) * wanderForceMag
           });
 
-          // B. CLUSTERING (Student-Student Affinity)
-          // "Students ... matches 3 out of 5 ... be in one pile"
-          const neighbors = studentGraphRef.current.get(body.cardData.id);
-          if (neighbors && neighbors.length > 0) {
-            neighbors.forEach(neighborId => {
-              // Find neighbour body
-              const neighborBody = allBodies.find(b => b.cardData?.type === 'student' && b.cardData.id === neighborId);
-              if (!neighborBody) return;
-
-              const vec = Vector.sub(neighborBody.position, body.position);
-              const dist = Vector.magnitude(vec);
-              const dir = Vector.normalise(vec);
-
-              // Attraction to cluster
-              // Target distance: don't sit on top, but close (e.g. 80px)
-              const clusterDist = 80;
-              if (dist > clusterDist) {
-                // Gentle pull
-                const cohesion = 0.000015;
-                Body.applyForce(body, body.position, Vector.mult(dir, cohesion));
-              }
-            });
-          }
-
-          // C. VISITOR ATTRACTION (Strict Radial Rings)
-          const visitors = allBodies.filter(b => b.cardData?.type === 'visitor');
-
-          let bestMatch = null;
-          let bestVisitorBody = null;
-
-          visitors.forEach(vBody => {
-            if (!vBody.cardData?.scores) return;
-            const m = vBody.cardData.scores.find(s => s.student_id === body.cardData.id);
-            if (m && (!bestMatch || m.matchCount > bestMatch.matchCount)) {
-              bestMatch = m;
-              bestVisitorBody = vBody;
-            }
-          });
-
-          if (bestMatch && bestVisitorBody) {
-            const vec = Vector.sub(bestVisitorBody.position, body.position);
-            const dist = Vector.magnitude(vec);
-            const dir = Vector.normalise(vec);
-
-            // STRICT TARGET DISTANCES (Rings)
-            // RELAXED LOGIC: 3+ matches = CLOSEST
-            let targetR = 1000;
-            let tension = 0.00001;
-
-            switch (bestMatch.matchCount) {
-              case 5:
-              case 4:
-              case 3:
-                targetR = 80; tension = 0.00015; // All 3+ go to center (stronger pull)
-                break;
-              case 2:
-                targetR = 400; tension = 0.00005; // Mid
-                break;
-              case 1:
-                targetR = 600; tension = 0.00003; // Far
-                break;
-              default:
-                targetR = 1200; tension = 0.00002; // Push away
-                break;
-            }
-
-            // 1. RADIAL FORCE
-            const error = dist - targetR;
-            Body.applyForce(body, body.position, Vector.mult(dir, error * tension));
-
-            // 2. TANGENTIAL FORCE (Orbit/Swirl)
-            const tangent = Vector.perp(dir);
-            const direction = (body.id % 2 === 0) ? 1 : -1;
-            const orbitSpeed = 0.00003;
-
-            Body.applyForce(body, body.position, Vector.mult(tangent, direction * orbitSpeed));
-          }
-
-          // D. STUDENT SEPARATION (Don't clump too hard)
+          // D. GENTLE SEPARATION (Anti-Clumping)
+          // Ensure they don't stick together if they meet, pushing them gently apart.
           const others = allBodies.filter(b => b !== body && b.cardData?.type === 'student');
           others.forEach(other => {
             const vec = Vector.sub(body.position, other.position);
             const dist = Vector.magnitude(vec);
-            if (dist < 55) {
-              const force = 0.0005;
-              Body.applyForce(body, body.position, Vector.mult(Vector.normalise(vec), force));
+            // Repel if within visual proximity (approx 2x visual radius + margin)
+            // Visual width is ~100px. So 130px is a good "personal space" buffer.
+            if (dist < 130) {
+              // Linear falloff: Stronger when closer.
+              // Max force 0.005 is 25% of wander force (0.02), enough to separate but not explode.
+              const strength = 0.005 * (1 - dist / 130);
+              Body.applyForce(body, body.position, Vector.mult(Vector.normalise(vec), strength));
             }
           });
+
+          // C. VISITOR FIELD (Progressive Tiered Matching)
+          const visitors = allBodies.filter(b => b.cardData?.type === 'visitor');
+
+          if (visitors.length > 0) {
+            visitors.forEach(vBody => {
+              if (!vBody.cardData || !vBody.cardData.scores) return;
+
+              // 1. Determine Active Matches for this visitor
+              // We do this every frame? Ideally cache it, but for 50 students it's fast enough.
+              const activeMatches = selectActiveMatches(vBody.cardData.scores);
+              const activeIds = new Set(activeMatches.map(m => m.student_id));
+
+              // Store for renderer (lines)
+              vBody.activeIds = activeIds;
+
+              // Check if THIS student is active
+              const myId = body.cardData.id;
+              const match = vBody.cardData.scores.find(s => s.student_id === myId);
+              const isActive = activeIds.has(myId);
+              const score = match ? match.matchCount : 0;
+
+              const vec = Vector.sub(vBody.position, body.position);
+              const dist = Vector.magnitude(vec);
+              const dir = Vector.normalise(vec);
+
+              if (isActive) {
+                // ATTRACT (Tiered Radius)
+                let targetR = 600; // Default weak
+                if (score === 5) targetR = 80;   // Stuck
+                else if (score === 4) targetR = 150;
+                else if (score === 3) targetR = 250;
+                else if (score === 2) targetR = 400; // Mid
+                else if (score === 1) targetR = 550; // Far orbit
+
+                const tension = 0.0001 + (score * 0.00005); // Stronger tension for higher scores
+
+                if (dist > targetR) {
+                  const force = (dist - targetR) * tension;
+                  Body.applyForce(body, body.position, Vector.mult(dir, force));
+                }
+                // Swirl
+                const tangent = Vector.perp(dir);
+                Body.applyForce(body, body.position, Vector.mult(tangent, 0.00005));
+              } else {
+                // REPEL (Not in the tournament)
+                const repulsionZone = 350;
+                if (dist < repulsionZone) {
+                  const force = -0.015 * (1 - dist / repulsionZone);
+                  Body.applyForce(body, body.position, Vector.mult(dir, force));
+                }
+              }
+            });
+          }
+
         }
 
-        // --- 3. BOUNDARY (Gentle containment) ---
-        const m = 50;
-        const boundaryForce = 0.0005;
+        // --- 3. BOUNDARY (Hard Wall Bounce) ---
+        // Reduced m to 40 (was 100) -> allows touching the edge
+        const m = 40;
+        const boundaryForce = 0.15; // Strong push back
         if (body.position.x < m) Body.applyForce(body, body.position, { x: boundaryForce, y: 0 });
         if (body.position.x > W - m) Body.applyForce(body, body.position, { x: -boundaryForce, y: 0 });
         if (body.position.y < m) Body.applyForce(body, body.position, { x: 0, y: boundaryForce });
@@ -253,21 +479,53 @@ function App() {
           el.style.transform = `translate3d(${b.position.x}px, ${b.position.y}px, 0) translate(-50%, -50%)`;
         }
 
+        // ... (lines update same) ...
         // 2. Update Lines
-        if (b.cardData?.type === 'visitor' && b.cardData.scores) {
+        // HIDE LINES IF DRAGGING
+        const currentDragId = draggingIdRef.current;
+
+        if (b.cardData.scores) {
           b.cardData.scores.forEach(match => {
-            // Show lines for ANY match (>= 1) so user feels feedback immediately
-            if (match.matchCount < 1) return;
+            if (!b.activeIds.has(match.student_id)) {
+              // Hide line if not active
+              const lineId = `line-${b.cardData.id}-${match.student_id}`;
+              const lineEl = lineRefs.current.get(lineId);
+              if (lineEl) lineEl.style.opacity = 0;
+              return;
+            }
 
             const lineId = `line-${b.cardData.id}-${match.student_id}`;
             const lineEl = lineRefs.current.get(lineId);
             const studentBody = engineRef.current.world.bodies.find(sb => sb.cardData?.type === 'student' && sb.cardData.id === match.student_id);
 
             if (lineEl && studentBody) {
-              lineEl.setAttribute('x1', b.position.x);
-              lineEl.setAttribute('y1', b.position.y);
-              lineEl.setAttribute('x2', studentBody.position.x);
-              lineEl.setAttribute('y2', studentBody.position.y);
+              // HIDE IF DRAGGING THIS VISITOR
+              if (b.cardData.id === currentDragId) {
+                lineEl.style.opacity = 0;
+                return;
+              }
+
+              const dx = b.position.x - studentBody.position.x;
+              const dy = b.position.y - studentBody.position.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+              // Line Style based on Score
+              const score = match.matchCount;
+              let width = 1;
+              let opacity = 0.2;
+
+              if (score === 5) { width = 6; opacity = 0.9; }
+              else if (score === 4) { width = 4; opacity = 0.7; }
+              else if (score === 3) { width = 3; opacity = 0.5; }
+              else if (score === 2) { width = 2; opacity = 0.3; }
+
+              lineEl.setAttribute('x1', studentBody.position.x);
+              lineEl.setAttribute('y1', studentBody.position.y);
+              lineEl.setAttribute('x2', b.position.x);
+              lineEl.setAttribute('y2', b.position.y);
+              lineEl.style.opacity = opacity;
+              lineEl.style.strokeWidth = width;
             }
           });
         }
@@ -301,24 +559,44 @@ function App() {
     const y = Math.random() * (window.innerHeight - 100) + 50;
 
     const isVisitor = card.type === 'visitor';
-    const radius = isVisitor ? 70 : 45;
 
-    const body = Bodies.circle(x, y, radius, {
-      restitution: 0.6,
-      frictionAir: isVisitor ? 0.05 : 0.002,
+    const visualRadius = isVisitor ? 50 : 25; // Student reduced ~30% (35 -> 25)
+
+    // PHYSICS SIZE (Larger core to REDUCE OVERLAP)
+    // 0.85 ratio -> minimal overlap, they bump sooner
+    const physicsRadius = visualRadius * 0.85;
+
+    const body = Bodies.circle(x, y, physicsRadius, {
+      restitution: 0.1, // No bounce
+      frictionAir: 0.035, // Medium-High Viscosity (Lava Lamp)
       friction: 0,
-      density: isVisitor ? 10 : 1,
+      density: isVisitor ? 2 : 1,
     });
 
     body.dbId = uniqueId;
-    body.cardData = card;
+    // Add random delay so they don't pulse in sync (0 to -8s)
+    const randomDelay = -(Math.random() * 8).toFixed(2);
+    // Random blob shape variant (1-4)
+    const blobVariant = Math.floor(Math.random() * 4) + 1;
+
+    // INIT LAST UPDATED (Local visual tracking only, logic uses DB created_at)
+    const createdAtLocal = Date.now();
+    body.cardData = {
+      ...card,
+      visualRadius,
+      randomDelay,
+      blobVariant,
+      createdAt: createdAtLocal,
+      // Ensure 'created_at' from DB is present if card has it
+      created_at: card.created_at
+    };
 
     World.add(engine.world, body);
     setCards(prev => new Map(prev).set(uniqueId, body));
 
     if (isNew && isVisitor) {
       processNewCard(card.id);
-      addNotification('New Visitor', `${card.visitor_name} has joined!`, 'info');
+      addNotification('New Visitor', `${card.visitor_name} つながりの海へようこそ。`, 'info');
     }
   };
 
@@ -331,8 +609,19 @@ function App() {
     const { data: students } = await supabase.from('student_cards').select('*');
     const matches = await semanticMatcher.findMatches(card, students || [], 0.0);
 
+    // INFINITE LOOP PREVENTION:
+    // If the database already has these scores, DO NOT update.
+    // Simple check: compare JSON stringification or length + first item
+    if (card.scores && JSON.stringify(card.scores) === JSON.stringify(matches)) {
+      // Just update local body if needed, but DO NOT write to DB (which triggers update loop)
+      // Actually, if it's the same, we might not even need to update local body if it's already there.
+      // But to be safe, let's update local body without changing lastUpdated.
+      updateBodyData({ ...card, type: 'visitor', scores: matches });
+      return;
+    }
+
     await supabase.from('visitor_cards').update({ scores: matches }).eq('id', cardId);
-    updateBodyData({ ...card, type: 'visitor', scores: matches });
+    updateBodyData({ ...card, type: 'visitor', scores: matches, lastUpdated: Date.now() });
   };
 
   const updateBodyData = (newData) => {
@@ -340,7 +629,17 @@ function App() {
     const engine = engineRef.current;
     const body = engine.world.bodies.find(b => b.dbId === uniqueId);
     if (body) {
-      body.cardData = { ...body.cardData, ...newData };
+      // RESET Timer on update ONLY if explicitly requested or if it's the first match
+      // Currently it resets on every update. Let's PRESERVE it if not passed.
+      const currentLastUpdated = body.cardData.lastUpdated;
+      body.cardData = {
+        ...body.cardData,
+        ...newData,
+        lastUpdated: newData.lastUpdated || currentLastUpdated
+      };
+
+      console.log('Updated body data:', uniqueId, 'Last Updated:', new Date(body.cardData.lastUpdated).toLocaleTimeString());
+
       // Force React update for data changes (like new scores), but NOT for position
       setCards(prev => new Map(prev).set(uniqueId, body));
     }
@@ -363,6 +662,7 @@ function App() {
     previousDataRef.current.set(newCard.id, JSON.stringify(newVector));
   };
 
+  // ... (Clustering and Supabase Effect remain same) ...
   // --- CLUSTERING CALCULATION (Pre-calc) ---
   const calculateStudentClusters = async (studentList) => {
     // Very simple N^2 check. 100 * 100 = 10,000. Easy for JS.
@@ -456,60 +756,181 @@ function App() {
   }, [cards]);
 
   return (
-    <div className="aquarium-container" ref={sceneRef} onClick={() => setExpandedId(null)}>
-      <NotificationStack notifications={notifications} />
+    <>
+      <div className="aquarium-container" ref={sceneRef} onClick={() => setExpandedId(null)}>
+        <NotificationStack notifications={notifications} />
 
-      <svg className="connections-layer">
-        {connections.map(line => (
-          <line
-            key={line.id}
-            ref={el => {
-              if (el) lineRefs.current.set(line.id, el);
-              else lineRefs.current.delete(line.id);
-            }}
-            className="connection-line"
-            style={{ stroke: `rgba(100,200,255,${line.opacity})`, strokeWidth: line.width }}
-          />
-        ))}
-      </svg>
+        <svg className="connections-layer">
+          {connections.map(line => {
+            const isHidden = line.visitorId === draggingId;
+            return (
+              <line
+                key={line.id}
+                ref={el => {
+                  if (el) lineRefs.current.set(line.id, el);
+                  else lineRefs.current.delete(line.id);
+                }}
+                className="connection-line"
+                style={{
+                  stroke: `rgba(100,200,255,${line.opacity})`,
+                  strokeWidth: line.width,
+                  opacity: isHidden ? 0 : 0.6
+                }}
+              />
+            );
+          })}
+        </svg>
 
-      {Array.from(cards.values()).map(body => {
-        const d = body.cardData;
-        const isExpanded = expandedId === d.id;
+        {Array.from(cards.values()).map(body => {
+          const d = body.cardData;
+          const isExpanded = expandedId === d.id;
+          const isFading = body.isFading; // Get fading state
 
-        return (
-          <div
-            key={d.id}
-            ref={el => {
-              if (el) cardRefs.current.set(body.dbId, el);
-              else cardRefs.current.delete(body.dbId);
-            }}
-            className={`card-body ${d.type} ${isExpanded ? 'expanded' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpandedId(prev => prev === d.id ? null : d.id);
-            }}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              willChange: 'transform'
-            }}
-          >
-            {!isExpanded && (
-              <div className="blob-name">
-                {d.visitor_name || d.student_name || '...'}
-              </div>
-            )}
-            {isExpanded && (
-              <div className="expanded-content">
-                <div style={{ fontWeight: 'bold' }}>{d.visitor_name || d.student_name}</div>
-              </div>
-            )}
+          return (
+            <div
+              key={d.id}
+              ref={el => {
+                if (el) cardRefs.current.set(body.dbId, el);
+                else cardRefs.current.delete(body.dbId);
+              }}
+              // Add variant class AND fading class
+              className={
+                (d.type === 'visitor' ? 'card-body visitor' : `card-body ${d.type} variant-${d.blobVariant || 1} ${isExpanded ? 'expanded' : ''}`) +
+                (isFading ? ' fading' : '') +
+                (body.isFlickering ? ' flickering' : '')
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+
+                // VISITOR: Manual Double Click Logic
+                if (d.type === 'visitor') {
+                  const now = Date.now();
+                  const lastTime = lastClickRef.current[d.id] || 0;
+
+                  if (now - lastTime < 300) {
+                    // DOUBLE CLICK DETECTED
+                    setExpandedId(expandedId === d.id ? null : d.id);
+                    lastClickRef.current[d.id] = 0; // Reset
+                  } else {
+                    // SINGLE CLICK
+                    lastClickRef.current[d.id] = now;
+
+                    // Optional: Shake on single click? User said "Single click just provides... shake"
+                    // But previously I disabled it to stabilize. 
+                    // Now that we rely on time, movement matters less for detection, but let's keep it steady.
+                    // Only shake if NOT double click.
+                  }
+                  return;
+                }
+
+                // STUDENT: Shake only
+                const b = engineRef.current.world.bodies.find(x => x.dbId === body.dbId);
+                if (b) {
+                  Body.applyForce(b, b.position, {
+                    x: (Math.random() - 0.5) * 0.15,
+                    y: -0.15
+                  });
+                }
+              }}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                // OVAL SHAPE: wider than it is tall (1.4x width)
+                width: d.type === 'visitor' ? `${d.visualRadius * 2}px` : (d.visualRadius ? `${d.visualRadius * 2.8}px` : '200px'),
+                height: d.visualRadius ? `${d.visualRadius * 2}px` : '140px',
+                willChange: 'transform',
+                animationDelay: `${d.randomDelay}s` // Randomize blob phase
+              }}
+            >
+              {d.type === 'visitor' ? (
+                <div className="visitor-blob-stack">
+                  <div className="v-blob-layer"></div>
+                  <div className="v-blob-layer"></div>
+                  <div className="v-blob-layer"></div>
+                  <div className="v-blob-layer"></div>
+                  <div className="visitor-content-inner">
+                    {d.visitor_name || 'Visitor'}
+                    {/* EXPANDED VISITOR CONTENT */}
+                    {isExpanded && (
+                      <div style={{ marginTop: '10px', pointerEvents: 'auto' }}>
+                        {(!d.scores || d.scores.length === 0) ? (
+                          <div style={{ fontSize: '0.8rem', color: 'white' }}>Matching...</div>
+                        ) : (
+                          <button
+                            style={{
+                              padding: '8px 16px',
+                              background: '#fff',
+                              color: '#e84393',
+                              border: 'none',
+                              borderRadius: '20px',
+                              cursor: 'pointer',
+                              fontWeight: 'bold',
+                              boxShadow: '0 4px 6px rgba(0,0,0,0.2)'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePrintRequest(d);
+                            }}
+                          >
+                            印刷
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                // STUDENT CARD RENDER
+                <>
+                  <div className="blob-name">
+                    {d.visitor_name || d.student_name || '...'}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* HIDDEN RECEIPT LAYOUT */}
+      {printingVisitor && matchedStudents.length > 0 && (
+        <div className="receipt-container">
+          <div className="receipt">
+            <div className="r-header">
+              <h2>Connection Flow</h2>
+              <p>{new Date().toLocaleString()}</p>
+              <div className="r-divider">--------------------------------</div>
+              <h3>あなたにピッタリ合う学生はこちらです</h3>
+              <p>For: {printingVisitor.visitor_name}</p>
+              <div className="r-divider">--------------------------------</div>
+            </div>
+
+            <div className="r-body">
+              {matchedStudents.map(s => (
+                <div key={s.id} className="r-row">
+                  <div className="r-left-col">
+                    <span className="r-rank">相性</span>
+                    <span className="r-percent">{Math.round(s.similarity * 100)}%</span>
+                  </div>
+                  <div className="r-info">
+                    <span className="r-name">{s.name}</span>
+                    <span className="r-num">No. {s.number}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="r-footer">
+              <div className="r-divider">--------------------------------</div>
+              <p>Thank you for playing!</p>
+              <p>素敵な出会いがありますように</p>
+              <p className="r-tiny">ID: {printingVisitor.id}</p>
+            </div>
           </div>
-        );
-      })}
-    </div>
+        </div>
+      )}
+    </>
   );
 }
 

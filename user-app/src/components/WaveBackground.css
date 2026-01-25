@@ -1,0 +1,66 @@
+/* src/components/WaveBackground.css */
+.wave-container-animated {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    /* Initial height: Top half */
+    overflow: visible;
+    /* Allow waves to hang down */
+    z-index: 5;
+    transition: all 1.5s ease-in-out;
+}
+
+.waves {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* Fill the container (50vh) */
+    bottom: 0;
+    min-height: 100px;
+    transform: scaleY(-1);
+    z-index: 2;
+}
+
+/* Animation for the waves moving horizontally */
+.rax>use {
+    animation: move-forever 25s cubic-bezier(.55, .5, .45, .5) infinite;
+}
+
+.rax>use:nth-child(1) {
+    animation-delay: -2s;
+    animation-duration: 7s;
+}
+
+.rax>use:nth-child(2) {
+    animation-delay: -3s;
+    animation-duration: 10s;
+}
+
+.rax>use:nth-child(3) {
+    animation-delay: -4s;
+    animation-duration: 13s;
+}
+
+.rax>use:nth-child(4) {
+    animation-delay: -5s;
+    animation-duration: 20s;
+}
+
+@keyframes move-forever {
+    0% {
+        transform: translate3d(-90px, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(85px, 0, 0);
+    }
+}
+
+/* Surge Animation State */
+.wave-container-animated.surging {
+    height: 150%;
+    /* Grow to cover the screen and more */
+    transform: translateY(0);
+}
