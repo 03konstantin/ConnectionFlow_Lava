@@ -17,46 +17,45 @@ import gakuseiImg from './images/gakusei.png';
 const APP_MODE = 'VISITOR';
 // ---------------------
 
-function App() {
-  // New Questions definition
-  const rawAxes = [
-    {
-      key: 'cooking_emphasis',
-      labelLeft: 'そう思わない',
-      labelRight: 'そう思う',
-      question: '料理は、作り方より見た目を重視する',
-      name: '料理'
-    },
-    {
-      key: 'new_activity_company',
-      labelLeft: 'そう思わない',
-      labelRight: 'そう思う',
-      question: '何か新しいことを始めるとき、誰かと一緒に始めたい',
-      name: '新しいこと'
-    },
-    {
-      key: 'menu_selection_style',
-      labelLeft: 'そう思わない',
-      labelRight: 'そう思う',
-      question: '私はメニューを選ぶときは、直感でパッと決める',
-      name: 'メニュー選択'
-    },
-    {
-      key: 'social_planning',
-      labelLeft: 'そう思わない',
-      labelRight: 'そう思う',
-      question: '遊びの予定は、当日や前日の急なお誘いでも嬉しい',
-      name: '遊びの予定'
-    },
-    {
-      key: 'messaging_urgency',
-      labelLeft: 'そう思わない',
-      labelRight: 'そう思う',
-      question: 'メッセージが来たら、すぐに返信しないと落ち着かない',
-      name: 'メッセージ'
-    }
-  ];
+const rawAxes = [
+  {
+    key: 'cooking_emphasis',
+    labelLeft: 'そう思わない',
+    labelRight: 'そう思う',
+    question: '料理は、作り方より見た目を重視する',
+    name: '料理'
+  },
+  {
+    key: 'new_activity_company',
+    labelLeft: 'そう思わない',
+    labelRight: 'そう思う',
+    question: '何か新しいことを始めるとき、誰かと一緒に始めたい',
+    name: '新しいこと'
+  },
+  {
+    key: 'menu_selection_style',
+    labelLeft: 'そう思わない',
+    labelRight: 'そう思う',
+    question: '私はメニューを選ぶときは、直感でパッと決める',
+    name: 'メニュー選択'
+  },
+  {
+    key: 'social_planning',
+    labelLeft: 'そう思わない',
+    labelRight: 'そう思う',
+    question: '遊びの予定は、当日や前日の急なお誘いでも嬉しい',
+    name: '遊びの予定'
+  },
+  {
+    key: 'messaging_urgency',
+    labelLeft: 'そう思わない',
+    labelRight: 'そう思う',
+    question: 'メッセージが来たら、すぐに返信しないと落ち着かない',
+    name: 'メッセージ'
+  }
+];
 
+function App() {
   // State
   const [axes, setAxes] = useState([]); // Randomized axes
   const [currentStep, setCurrentStep] = useState(-2); // -2: Welcome, -1.5: Tutorial, -1: Name Input, 0-4: Questions, 6: Done
@@ -83,6 +82,7 @@ function App() {
   };
 
   // Form State
+  // eslint-disable-next-line no-unused-vars
   const [studentNumber, setStudentNumber] = useState('');
   const [studentName, setStudentName] = useState('');
 

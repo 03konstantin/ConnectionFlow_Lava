@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient';
 import './App.css';
 import { NotificationStack } from './NotificationStack';
 import { semanticMatcher } from './SemanticMatcher';
-import visitorIcon from './visitor_icon.png';
+// import visitorIcon from './visitor_icon.png';
 
 // 🔥 CONFIGURATION 🔥
 // const MATCH_THRESHOLD = 0.0; // Unused currently
@@ -505,10 +505,10 @@ function App() {
                 return;
               }
 
-              const dx = b.position.x - studentBody.position.x;
-              const dy = b.position.y - studentBody.position.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+              // const dx = b.position.x - studentBody.position.x;
+              // const dy = b.position.y - studentBody.position.y;
+              // const dist = Math.sqrt(dx * dx + dy * dy);
+              // const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
               // Line Style based on Score
               const score = match.matchCount;
@@ -535,11 +535,14 @@ function App() {
     renderLoop();
 
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       Runner.stop(runnerRef.current);
       if (frameId) cancelAnimationFrame(frameId);
       World.clear(engine.world);
       Engine.clear(engine);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --- CARD MANAGEMENT ---
@@ -732,6 +735,7 @@ function App() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Compute connections only when cards data changes, NOT on every frame
