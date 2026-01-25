@@ -7,6 +7,7 @@ import dragSoundFile from './sound/draging_visitor.mp3';
 import newVisitorSoundFile from './sound/new_visitor_appeaer_sound.mp3';
 import { NotificationStack } from './NotificationStack';
 import { semanticMatcher } from './SemanticMatcher';
+import logo from './logo.svg';
 // import visitorIcon from './visitor_icon.png';
 
 // 🔥 CONFIGURATION 🔥
@@ -95,7 +96,7 @@ function App() {
 
   // PRINTING STATE
   const [printingVisitor, setPrintingVisitor] = useState(null);
-  const [matchedStudents, setMatchedStudents] = useState([]);
+  const [matchedStudents, setMatchedStudents] = useState({ compatible: [], surprising: null });
 
   // =================================================================
   // 🖨️ PRINTING LOGIC
@@ -122,15 +123,31 @@ function App() {
     }
 
     // Sort these active matches by score descending
-    const topMatches = activeMatches.sort((a, b) => b.matchCount - a.matchCount).slice(0, 10); // increased limit
-    const studentIds = topMatches.map(m => m.student_id);
+    const topMatches = activeMatches.sort((a, b) => b.matchCount - a.matchCount).slice(0, 3); // Top 3
+    const compatibleIds = topMatches.map(m => m.student_id);
 
-    console.log('Fetching students:', studentIds);
+    // --- SURPRISING PARTNER (0 Matches) ---
+    // Filter for matchCount === 0
+    const zeroMatches = visitor.scores.filter(m => m.matchCount === 0);
+    let surprisingMatch = null;
+    let surprisingId = null;
+
+    if (zeroMatches.length > 0) {
+      // Randomly pick one
+      const randomIndex = Math.floor(Math.random() * zeroMatches.length);
+      surprisingMatch = zeroMatches[randomIndex];
+      surprisingId = surprisingMatch.student_id;
+    }
+
+    const idsToFetch = [...compatibleIds];
+    if (surprisingId) idsToFetch.push(surprisingId);
+
+    console.log('Fetching students:', idsToFetch);
 
     const { data: students, error } = await supabase
       .from('student_cards')
-      .select('id, student_name, student_number')
-      .in('id', studentIds);
+      .select('id, student_name, student_number, katakana_name, table_number') // Added fields
+      .in('id', idsToFetch);
 
     if (error || !students) {
       console.error('Student fetch error:', error);
@@ -139,17 +156,43 @@ function App() {
       return;
     }
 
-    // Merge score data with student details
-    const finalData = topMatches.map((match, index) => {
+    // Process Compatible
+    const compatibleData = topMatches.map((match, index) => {
       const details = students.find(s => s.id === match.student_id);
       return {
         rank: index + 1,
-        name: details?.student_name || 'Unknown Student',
+        // PREFER KATAKANA NAME, fallback to student_name
+        name: details?.katakana_name || details?.student_name || 'Unknown',
         number: details?.student_number || '---',
+        table: details?.table_number || '?', // Table Number
         id: match.student_id,
-        similarity: match.similarity || 0 // Pass similarity
+        similarity: match.similarity || 0,
+        matchCount: match.matchCount, // Use matchCount for Hearts
+        type: 'compatible'
       };
     });
+
+    // Process Surprising
+    let surprisingData = null;
+    if (surprisingMatch && surprisingId) {
+      const details = students.find(s => s.id === surprisingId);
+      if (details) {
+        surprisingData = {
+          name: details.katakana_name || details.student_name || 'Unknown',
+          number: details.student_number || '---',
+          table: details.table_number || '?',
+          id: surprisingId,
+          similarity: 0,
+          matchCount: 0,
+          type: 'surprising'
+        };
+      }
+    }
+
+    const finalData = {
+      compatible: compatibleData,
+      surprising: surprisingData
+    };
 
     console.log('Final Print Data:', finalData);
     setMatchedStudents(finalData);
@@ -969,39 +1012,93 @@ function App() {
         })}
       </div>
 
-      {/* HIDDEN RECEIPT LAYOUT */}
-      {printingVisitor && matchedStudents.length > 0 && (
+      {printingVisitor && matchedStudents && (
         <div className="receipt-container">
           <div className="receipt">
+            {/* --- HEADER --- */}
             <div className="r-header">
-              <h2>Connection Flow</h2>
-              <p>{new Date().toLocaleString()}</p>
-              <div className="r-divider">--------------------------------</div>
-              <h3>あなたにピッタリ合う学生はこちらです</h3>
-              <p>For: {printingVisitor.visitor_name}</p>
-              <div className="r-divider">--------------------------------</div>
+              <h1 className="r-title-jp">ツナガリのウミ</h1>
+              <p className="r-subtitle-jp">ニホン デンシ センモン ガッコウ</p>
+              <p className="r-subtitle-jp">ウェブ デザインカ ソツギョウ テンジカイ</p>
+
+              <div className="r-spacer-large"></div>
+
+              <h2 className="r-greeting">イツカ イッショニ シゴト デキタラ イイナ！</h2>
+              <p className="r-date">{new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
             </div>
 
-            <div className="r-body">
-              {matchedStudents.map(s => (
+            {/* --- COMPATIBLE PARTNERS --- */}
+            <div className="r-section">
+              <div className="r-section-title">
+                {/* Hands Icon (Simple SVG path) */}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+                キノアウ パートナー
+              </div>
+
+              {matchedStudents.compatible && matchedStudents.compatible.map(s => (
                 <div key={s.id} className="r-row">
-                  <div className="r-left-col">
-                    <span className="r-rank">相性</span>
-                    <span className="r-percent">{Math.round(s.similarity * 100)}%</span>
+                  <div className="r-row-left">
+                    <span className="r-table-no">No{s.table}</span>
+                    <span className="r-name-katakana">{s.name}</span>
                   </div>
-                  <div className="r-info">
-                    <span className="r-name">{s.name}</span>
-                    <span className="r-num">No. {s.number}</span>
+                  <div className="r-row-right">
+                    <div className="r-hearts">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>{i < s.matchCount ? '♥' : '♡'}</span>
+                      ))}
+                    </div>
+                    <div className="r-pay-line">{s.number} AW-Pay</div>
                   </div>
                 </div>
               ))}
             </div>
 
+            <div className="r-divider-line">----------------------------------------------------</div>
+
+            {/* --- SURPRISING PARTNER --- */}
+            {matchedStudents.surprising && (
+              <>
+                <div className="r-section">
+                  <div className="r-section-title">
+                    {/* Target Icon */}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    オドロキヲ アタエル パートナー
+                  </div>
+
+                  <div className="r-row">
+                    <div className="r-row-left">
+                      <span className="r-table-no">No{matchedStudents.surprising.table}</span>
+                      <span className="r-name-katakana">{matchedStudents.surprising.name}</span>
+                    </div>
+                    <div className="r-row-right">
+                      <div className="r-hearts">
+                        <span>*****</span>
+                      </div>
+                      <div className="r-pay-line">0 AW-Pay</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="r-divider-line">----------------------------------------------------</div>
+              </>
+            )}
+
+            {/* --- FOOTER --- */}
             <div className="r-footer">
-              <div className="r-divider">--------------------------------</div>
-              <p>Thank you for playing!</p>
-              <p>素敵な出会いがありますように</p>
-              <p className="r-tiny">ID: {printingVisitor.id}</p>
+              <h3 className="r-footer-msg">ゴライジョウ アリガトウゴザイマシタ</h3>
+
+              {/* Logo Image */}
+              <div className="r-logo-container">
+                <img src={logo} alt="Logo" className="r-logo-img" />
+              </div>
+
+              <p className="r-footer-sub">ニホン デンシ センモン ガッコウ</p>
+              <p className="r-footer-sub">ウェブ デザインカ ソツギョウ テンジカイ</p>
             </div>
           </div>
         </div>

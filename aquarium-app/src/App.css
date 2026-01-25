@@ -393,7 +393,8 @@ html,
   /* HIDE EVERYTHING ELSE */
   .aquarium-container,
   .connections-layer,
-  .card-body {
+  .card-body,
+  .notification-stack {
     display: none !important;
   }
 
@@ -409,132 +410,182 @@ html,
     z-index: 99999;
   }
 
-  /* PAPER SETUP - 80mm width standard */
-  /* Browsers handle 80mm printers by treating width as ~72mm printable or fitting to page */
-  /* We use simple block layout */
-
   @page {
     margin: 0;
     size: auto;
-    /* Allow printer driver to handle size */
   }
 
   body {
     background: white;
     margin: 0;
     padding: 0;
-    overflow: visible;
+    color: black;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .receipt {
     width: 100%;
-    /* Will fill the 80mm paper width */
     max-width: 80mm;
-    /* Constraint just in case */
-    padding: 5px 10px;
-    /* Small padding */
-    font-family: 'Courier New', monospace;
-    /* Monospaced looks like generic receipt */
-    font-size: 14px;
-    line-height: 1.4;
-    color: black;
+    /* Standard Receipt Width */
+    margin: 0 auto;
+    padding: 20px 20px;
+    /* Increased side padding */
+    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
   }
 
+  /* --- HEADER --- */
   .r-header {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    /* Reduced to balance vertical space */
   }
 
-  .r-header h2 {
-    margin: 0;
+  .r-title-jp {
     font-size: 18px;
-    font-weight: bold;
-    text-transform: uppercase;
+    /* Reduced from 24px */
+    font-weight: 900;
+    margin: 0 0 5px 0;
+    letter-spacing: 2px;
   }
 
-  .r-header h3 {
-    margin: 5px 0 0 0;
-    font-size: 16px;
-  }
-
-  .r-header p {
+  .r-subtitle-jp {
+    font-size: 8px;
+    /* Reduced from 10px */
     margin: 2px 0;
-    color: black;
-    font-size: 12px;
-  }
-
-  .r-divider {
-    overflow: hidden;
-    white-space: nowrap;
-    margin: 5px 0;
     font-weight: bold;
+    letter-spacing: 1px;
   }
 
-  .r-body {
-    margin-top: 10px;
+  .r-spacer-large {
+    height: 10px;
+    /* Reduced from 20px */
+  }
+
+  .r-greeting {
+    font-size: 11px;
+    /* Reduced from 16px */
+    font-weight: 900;
+    margin: 8px 0;
+    letter-spacing: 1px;
+  }
+
+  .r-date {
+    text-align: right;
+    font-size: 8px;
+    /* Reduced from 10px */
+    margin-top: 3px;
+    color: #333;
+  }
+
+  /* --- SECTIONS --- */
+  .r-section {
+    margin-bottom: 8px;
+    /* Reduced from 15px */
+  }
+
+  .r-section-title {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    /* Reduced from 16px */
+    font-weight: 900;
+    margin-bottom: 5px;
   }
 
   .r-row {
     display: flex;
-    margin-bottom: 10px;
-    align-items: center;
-    border-bottom: 1px dashed #ddd;
-    /* Separator */
-    padding-bottom: 5px;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 6px;
+    /* Reduced from 12px */
+    padding: 0 5px;
   }
 
-  .r-left-col {
+  .r-row-left {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    min-width: 50px;
-    border-right: 2px solid #333;
-    /* Divider line */
-    padding-right: 8px;
+    align-items: baseline;
+    gap: 4px;
   }
 
-  .r-rank {
-    font-size: 10px;
-    font-weight: normal;
-    margin-right: 0;
-    color: #666;
-  }
-
-  .r-percent {
-    font-size: 20px;
-    font-weight: 900;
-    /* Extra bold */
-  }
-
-  .r-info {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .r-name {
+  .r-table-no {
+    font-size: 9px;
+    /* Reduced from 12px */
     font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 3px;
+    white-space: nowrap;
   }
 
-  .r-num {
+  .r-name-katakana {
+    font-size: 11px;
+    /* Reduced from 14px */
+    font-weight: 900;
+  }
+
+  .r-row-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .r-hearts {
     font-size: 12px;
-    color: #444;
+    /* Reduced from 16px */
+    letter-spacing: 1px;
+    line-height: 1;
+    margin-bottom: 1px;
   }
 
+  .r-pay-line {
+    font-size: 9px;
+    /* Reduced from 12px */
+    font-weight: bold;
+  }
+
+  .r-divider-line {
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 8px 0;
+    font-weight: bold;
+    font-family: monospace;
+    letter-spacing: -2px;
+    font-size: 10px;
+  }
+
+  /* --- FOOTER --- */
   .r-footer {
     text-align: center;
-    margin-top: 20px;
-    font-size: 12px;
+    margin-top: 15px;
     padding-bottom: 20px;
-    /* End buffer */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .r-tiny {
-    font-size: 10px;
-    margin-top: 10px;
-    color: #555;
+  .r-footer-msg {
+    font-size: 11px;
+    /* Reduced from 16px */
+    font-weight: 900;
+    margin-bottom: 10px;
+  }
+
+  .r-logo-container {
+    width: 60%;
+    margin-bottom: 15px;
+  }
+
+  .r-logo-img {
+    width: 100%;
+    height: auto;
+    filter: grayscale(100%) contrast(200%);
+  }
+
+  .r-footer-sub {
+    font-size: 8px;
+    /* Reduced from 10px */
+    font-weight: bold;
+    margin: 1px 0;
   }
 }
