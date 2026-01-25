@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import Matter from 'matter-js';
 import { supabase } from './supabaseClient';
 import './App.css';
+import bgmFile from './sound/BGM.mp3';
+import dragSoundFile from './sound/draging_visitor.mp3';
+import newVisitorSoundFile from './sound/new_visitor_appeaer_sound.mp3';
 import { NotificationStack } from './NotificationStack';
 import { semanticMatcher } from './SemanticMatcher';
 // import visitorIcon from './visitor_icon.png';
@@ -81,6 +84,15 @@ function App() {
   const draggingIdRef = useRef(null); // Ref for render loop access
   const lastClickRef = useRef({}); // Track click times for manual double-click
 
+  // SOUND REFS (Lazy Init)
+  const bgmRef = useRef(null);
+  const dragSoundRef = useRef(null);
+  const newVisitorSoundRef = useRef(null);
+
+  if (!bgmRef.current) bgmRef.current = new Audio(bgmFile);
+  if (!dragSoundRef.current) dragSoundRef.current = new Audio(dragSoundFile);
+  if (!newVisitorSoundRef.current) newVisitorSoundRef.current = new Audio(newVisitorSoundFile);
+
   // PRINTING STATE
   const [printingVisitor, setPrintingVisitor] = useState(null);
   const [matchedStudents, setMatchedStudents] = useState([]);
@@ -150,6 +162,17 @@ function App() {
 
   // 🧠 NOTIFICATION LOGIC
   // =================================================================
+  // HELPER: Safe Audio Play
+  const safePlay = (audioRef) => {
+    if (!audioRef.current) return;
+    const promise = audioRef.current.play();
+    if (promise !== undefined) {
+      promise.catch(error => {
+        // console.log("Audio autoplay blocked. Waiting for interaction.");
+      });
+    }
+  };
+
   const addNotification = (title, message, type = 'info') => {
     // ... same ...
     const id = Date.now() + Math.random();
@@ -169,6 +192,44 @@ function App() {
   // =================================================================
   useEffect(() => {
     semanticMatcher.init();
+
+    // AUDIO SETUP
+    // BGM
+    bgmRef.current.loop = true;
+    bgmRef.current.volume = 0.5;
+
+    // Robust Autoplay Handler
+    const tryPlayBGM = () => {
+      if (bgmRef.current.paused) {
+        bgmRef.current.play().then(() => {
+          // Success! Remove listeners
+          window.removeEventListener('click', tryPlayBGM);
+          window.removeEventListener('keydown', tryPlayBGM);
+          window.removeEventListener('touchstart', tryPlayBGM);
+        }).catch(e => {
+          // Still blocked? Keep listening.
+          console.log("BGM blocked, waiting for interaction...");
+        });
+      }
+    };
+
+    // Try immediately
+    tryPlayBGM();
+
+    // Attach listeners to retry on ANY interaction
+    window.addEventListener('click', tryPlayBGM);
+    window.addEventListener('keydown', tryPlayBGM);
+    window.addEventListener('touchstart', tryPlayBGM);
+
+    // Drag Sound Loop Setup
+    dragSoundRef.current.loop = true;
+
+    return () => {
+      window.removeEventListener('click', tryPlayBGM);
+      window.removeEventListener('keydown', tryPlayBGM);
+      window.removeEventListener('touchstart', tryPlayBGM);
+    };
+
   }, []);
 
   // --- CARD LIFECYCLE MANAGEMENT (FADE OUT) ---
@@ -286,6 +347,10 @@ function App() {
         if (body.cardData?.type === 'visitor') {
           setDraggingId(body.cardData.id);
           draggingIdRef.current = body.cardData.id;
+
+          // Start Drag Sound
+          dragSoundRef.current.currentTime = 0;
+          safePlay(dragSoundRef);
         }
       }
     });
@@ -294,6 +359,10 @@ function App() {
       isDraggingRef.current = false;
       setDraggingId(null);
       draggingIdRef.current = null;
+
+      // Stop Drag Sound
+      dragSoundRef.current.pause();
+      dragSoundRef.current.currentTime = 0;
     });
 
     // PHYSICS LOOP
@@ -600,6 +669,9 @@ function App() {
     if (isNew && isVisitor) {
       processNewCard(card.id);
       addNotification('New Visitor', `${card.visitor_name} つながりの海へようこそ。`, 'info');
+      // Play Sound
+      newVisitorSoundRef.current.currentTime = 0;
+      safePlay(newVisitorSoundRef);
     }
   };
 
