@@ -257,10 +257,20 @@ function App() {
   const handleGlobalTouchEnd = (e) => {
     if (!touchStart) return;
     const touchEnd = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+    // Validate
+    const isStudentMode = APP_MODE === 'STUDENT';
+    const canStart = studentName && (!isStudentMode || studentNumber);
+
     // If swipe UP (delta > 30px)
     if (touchStart - touchEnd > 30) {
-      if (sphereRef.current) {
-        sphereRef.current.flyAway();
+      if (canStart) {
+        if (sphereRef.current) {
+          sphereRef.current.flyAway();
+        }
+      } else {
+        // Simple alert for now
+        alert('名前を入力してください');
       }
     }
     setTouchStart(null);

@@ -123,7 +123,7 @@ function App() {
     }
 
     // Sort these active matches by score descending
-    const topMatches = activeMatches.sort((a, b) => b.matchCount - a.matchCount).slice(0, 3); // Top 3
+    const topMatches = activeMatches.sort((a, b) => b.matchCount - a.matchCount).slice(0, 10); // increased limit to 10
     const compatibleIds = topMatches.map(m => m.student_id);
 
     // --- SURPRISING PARTNER (0 Matches) ---
@@ -598,7 +598,7 @@ function App() {
 
         if (b.cardData.scores) {
           b.cardData.scores.forEach(match => {
-            if (!b.activeIds.has(match.student_id)) {
+            if (!b.activeIds || !b.activeIds.has(match.student_id)) {
               // Hide line if not active
               const lineId = `line-${b.cardData.id}-${match.student_id}`;
               const lineEl = lineRefs.current.get(lineId);

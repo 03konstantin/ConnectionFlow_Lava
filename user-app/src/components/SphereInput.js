@@ -1,13 +1,13 @@
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import './SphereInput.css';
 
-const SphereInput = forwardRef(({ value, onChange, placeholder, onSubmit }, ref) => {
+const SphereInput = forwardRef(({ value, onChange, placeholder, onSubmit, disabled }, ref) => {
     const [dragStart, setDragStart] = useState(null);
     const [offsetY, setOffsetY] = useState(0);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
     const triggerFlyAway = () => {
-        if (isAnimatingOut) return;
+        if (isAnimatingOut || disabled) return;
         setIsAnimatingOut(true);
         setOffsetY(0);
         if (onSubmit) {
@@ -22,6 +22,7 @@ const SphereInput = forwardRef(({ value, onChange, placeholder, onSubmit }, ref)
     }));
 
     const handleStart = (e) => {
+        if (disabled) return;
         // Only capture drag if NOT on input
         // The input has stopPropagation, so this fires for sphere background interaction
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
