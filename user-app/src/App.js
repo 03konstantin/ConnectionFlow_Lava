@@ -409,7 +409,7 @@ function App() {
         onTouchEnd={handleGlobalTouchEnd}
         onMouseDown={(e) => setTouchStart(e.clientY)} // For Mouse testing
         onMouseUp={(e) => {
-          if (touchStart && touchStart - e.clientY > 30 && sphereRef.current) sphereRef.current.flyAway();
+          if (touchStart && touchStart - e.clientY > 30 && sphereRef.current && canStart) sphereRef.current.flyAway();
           setTouchStart(null);
         }}
       >
@@ -427,6 +427,7 @@ function App() {
           onChange={(e) => setStudentName(e.target.value)}
           placeholder="電子太郎"
           onSubmit={canStart ? startSession : null}
+          disabled={!canStart}
         />
 
         {/* Swipe Hint - Rendered Externally */}
