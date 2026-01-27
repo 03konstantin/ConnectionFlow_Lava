@@ -3,7 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import './App.css';
 import WaveBackground from './components/WaveBackground';
-import SphereInput from './components/SphereInput'; // Import SphereInput
+import CloudInput from './components/CloudInput'; // Import CloudInput
+import grassImg from './images/grass1.png'; // Import Grass Image
+import grass2Img from './images/grass2.png'; // Import Grass 2 Image
 import startSand from './images/start_sand.png';
 // Waves are now handled by WaveBackground component
 import qrcodeImg from './images/qrcode.png';
@@ -120,17 +122,7 @@ function App() {
   ];
 
   // Timer Logic for Message Screens
-  useEffect(() => {
-    let timer;
-    if (currentStep === -0.9) {
-      // Name Sent Message -> Question 1
-      timer = setTimeout(() => {
-        setCurrentStep(0);
-      }, 3000);
-    }
-    // Removed Step 5 timer logic
-    return () => clearTimeout(timer);
-  }, [currentStep]);
+  // Timer Logic Removed for -0.9 Screen (User interaction only)
 
   // Start Session
   const startSession = async () => {
@@ -413,8 +405,8 @@ function App() {
           </svg>
         </div>
 
-        {/* Sphere Input Component - With Ref */}
-        <SphereInput
+        {/* Cloud Input Component - With Ref */}
+        <CloudInput
           ref={sphereRef}
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
@@ -433,9 +425,27 @@ function App() {
   if (currentStep === -0.9) {
     return (
       <div className="App tutorial-screen-container">
-        <div className="welcome-text" style={{ color: 'white', fontWeight: 'bold', fontSize: '20px', padding: '40px', textAlign: 'center' }}>
-          大きいな画面に追加しました
+
+        <div className="confirmation-content">
+          <div className="confirmation-text">
+            あなたの名前を<br />
+            モニターに追加しました。<br />
+            画面をご確認ください。
+          </div>
+
+          <div className="confirmation-text">
+            これから5つの質問に答えていくと、<br />
+            質問ごとに、<br />
+            あなたがどんな学生と近いのかを<br />
+            見ることができます。
+          </div>
+
+          <button className="confirmation-btn" onClick={() => setCurrentStep(0)}>
+            つぎへ
+          </button>
         </div>
+
+        <img src={grassImg} alt="grass" className="grass-bottom-img" />
       </div>
     );
   }
@@ -444,16 +454,24 @@ function App() {
   if (currentStep === 6) {
     return (
       <div className="App tutorial-screen-container">
-        {/* Removed the Card wrapper as requested, showing text directly like transition screens */}
-        <div className="welcome-text" style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', padding: '40px', textAlign: 'center' }}>
-          <h1>完了!</h1>
-          <p style={{ color: 'white' }}>
-            ありがとうございました。<br />
-            登録が完了しました。<br /><br />
-            大きい画面の方に自分をダブルクリックしたら、<br />
-            マッチングの結果を印刷できます
-          </p>
+
+        <div className="confirmation-content">
+          <div className="confirmation-header">
+            ご来場ありがとうございました。
+          </div>
+
+          <div className="confirmation-text">
+            あなたと近い学生が見つかりました。<br />
+            画面をご確認ください。
+          </div>
+
+          <div className="confirmation-text">
+            マッチングの結果を<br />
+            ダブルクリックして印刷できます。
+          </div>
         </div>
+
+        <img src={grass2Img} alt="grass2" className="grass-bottom-img" />
       </div>
     );
   }
@@ -490,7 +508,7 @@ function App() {
         <div className="button-row">
           {currentStep > 0 && (
             <button
-              className="back-btn"
+              className="dotted-btn-base dotted-btn-white"
               onClick={handleBack}
               disabled={isSending}
             >
@@ -499,7 +517,7 @@ function App() {
           )}
 
           <button
-            className="next-btn"
+            className="dotted-btn-base dotted-btn-blue"
             onClick={handleNext}
             disabled={isSending || currentSelection === null}
           >

@@ -283,58 +283,42 @@ p {
   display: flex;
   gap: 16px;
   width: 100%;
-  justify-content: center;
 }
 
-/* Base Dotted Button Style */
-.dotted-btn-base {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
+.start-btn,
+.next-btn,
+.back-btn {
+  border: none;
+  padding: 16px 32px;
   font-size: 16px;
-  font-weight: 700;
-  border-radius: 15px;
-  padding: 16px 0;
+  border-radius: 30px;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, opacity 0.2s;
-  box-sizing: border-box;
-  flex: 1;
-  /* Grow to fill space */
-  max-width: 320px;
-  /* Cap width like start button */
+  width: 100%;
+  font-weight: bold;
+  opacity: 1;
+  transition: opacity 0.2s;
 }
 
-.dotted-btn-blue {
+.start-btn,
+.next-btn {
+  background: #4C7CB5;
   color: #fff;
-  background-color: #53B0CE;
-  border: 4px dotted #fff;
 }
 
-.dotted-btn-blue:hover {
-  transform: translateY(-2px);
-  background-color: #4aa3be;
+.back-btn {
+  background: #f0f0f0;
+  color: #333;
 }
 
-.dotted-btn-blue:disabled {
-  background-color: #ccc;
-  border-color: #eee;
+.start-btn:disabled,
+.next-btn:disabled {
+  background: #ccc;
   cursor: not-allowed;
 }
 
-.dotted-btn-white {
-  color: #53B0CE;
-  background-color: #fff;
-  border: 4px dotted #53B0CE;
-}
-
-.dotted-btn-white:hover {
-  transform: translateY(-2px);
-  background-color: #f0f8ff;
-}
-
-.dotted-btn-white:disabled {
-  color: #ccc;
-  border-color: #ccc;
-  cursor: not-allowed;
+/* Ensure buttons take equal width in row */
+.button-row button {
+  flex: 1;
 }
 
 /* Welcome Screen */
@@ -517,15 +501,13 @@ p {
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 60px;
-  /* Shifted up by 20px */
+  margin-top: 150px;
   margin-bottom: 20px;
 }
 
 .slide-image-wrapper {
   width: 260px;
-  height: 340px;
-  /* Elongated portrait shape */
+  height: 260px;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -1112,86 +1094,5 @@ p {
   .card {
     padding: 30px 15px !important;
     /* Reduce padding to fit content */
-  }
-}
-
-/* Confirmation Screen (-0.9) */
-.confirmation-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
-  height: 800%;
-  padding: 0 40px;
-  box-sizing: border-box;
-  text-align: left;
-  z-index: 20;
-  position: relative;
-  /* Lift text up a bit */
-  margin-bottom: 60%;
-}
-
-.confirmation-header {
-  color: white;
-  font-weight: bold;
-  font-size: 20px;
-  line-height: 1.5;
-  margin-bottom: 30px;
-}
-
-.confirmation-text {
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 1.8;
-  margin-bottom: 30px;
-}
-
-.confirmation-btn {
-  /* Inherits from welcome-start-btn base look */
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-  background-color: #528BC5;
-  /* Darker blue to match screenshot */
-  border: 4px dotted #fff;
-  border-radius: 12px;
-  padding: 12px 0;
-  width: 140px;
-  /* Fixed small width */
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-  align-self: flex-end;
-  /* Align to right or specific position? Screenshot shows right/centerish */
-  /* Actually screenshot shows it floating right or center. Let's trying align-self: flex-end to mimic placement */
-  margin-top: 10px;
-}
-
-.tutorial-title {
-  color: white !important;
-  font-size: 32px !important;
-  margin-top: 40px;
-}
-
-.grass-bottom-img {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  /* Full width, no gaps, no cropping */
-  min-width: 100%;
-  object-fit: cover;
-  z-index: 10;
-  margin: 0;
-  padding: 0;
-  display: block;
-}
-
-@media (max-width: 380px) {
-  .confirmation-content {
-    padding: 0 24px;
   }
 }
