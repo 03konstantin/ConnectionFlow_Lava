@@ -453,7 +453,7 @@ html,
   /* --- HEADER --- */
   .r-header {
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 50px;
     /* Reduced to balance vertical space */
   }
 
@@ -496,7 +496,7 @@ html,
 
   /* --- SECTIONS --- */
   .r-section {
-    margin-bottom: 8px;
+    margin-bottom: 13px;
     /* Reduced from 15px */
   }
 
@@ -513,7 +513,7 @@ html,
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 6px;
+    margin-bottom: 11px;
     /* Reduced from 12px */
     padding: 0 5px;
   }

@@ -1026,6 +1026,9 @@ function App() {
               <h2 className="r-greeting">イツカ イッショニ シゴト デキタラ イイナ！</h2>
             </div>
 
+            {/* SPACER AFTER HEADER */}
+            <div style={{ height: '20px', width: '100%' }}></div>
+
             {/* --- COMPATIBLE PARTNERS --- */}
             <div className="r-section">
               <div className="r-section-title">
@@ -1077,7 +1080,7 @@ function App() {
                     </div>
                     <div className="r-row-right">
                       <div className="r-hearts">
-                        <span>*****</span>
+                        <span style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '3px', lineHeight: '1' }}>*****</span>
                       </div>
                       <div className="r-pay-line">{matchedStudents.surprising.number} AW-Pay</div>
                     </div>
