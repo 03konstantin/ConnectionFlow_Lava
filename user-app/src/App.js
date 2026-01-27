@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import './App.css';
 import WaveBackground from './components/WaveBackground';
-import CloudInput from './components/CloudInput'; // Import CloudInput
+import UserCardInput from './components/UserCardInput'; // Import UserCardInput
 import grassImg from './images/grass1.png'; // Import Grass Image
 import grass2Img from './images/grass2.png'; // Import Grass 2 Image
 import startSand from './images/start_sand.png';
 // Waves are now handled by WaveBackground component
-import qrcodeImg from './images/qrcode.png';
+// import qrcodeImg from './images/qrcode.png';
 import smartphoneImg from './images/smartphone.png';
 import aquariumImg from './images/aquarium.png';
 import gakuseiImg from './images/gakusei.png';
@@ -307,7 +307,6 @@ function App() {
   // Tutorial Screen
   if (currentStep === -1.5) {
     const tutorialSlides = [
-      { img: qrcodeImg, text: 'QRコードをスキャンして。。。' },
       { img: smartphoneImg, text: 'ニックネームを入力して、５つの質問に答える' },
       { img: aquariumImg, text: '大きいモニタにマッチングした学生を確認する' },
       { img: gakuseiImg, text: '学生の作品プレゼンを聞きに行く' }
@@ -405,8 +404,8 @@ function App() {
           </svg>
         </div>
 
-        {/* Cloud Input Component - With Ref */}
-        <CloudInput
+        {/* User Card Input Component - With Ref */}
+        <UserCardInput
           ref={sphereRef}
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
