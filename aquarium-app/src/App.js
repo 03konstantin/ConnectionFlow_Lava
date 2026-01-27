@@ -8,6 +8,8 @@ import newVisitorSoundFile from './sound/new_visitor_appeaer_sound.mp3';
 import { NotificationStack } from './NotificationStack';
 import { semanticMatcher } from './SemanticMatcher';
 import logo from './logo.svg';
+import heartIcon from './heart.png';
+import targetIcon from './target.png';
 // import visitorIcon from './visitor_icon.png';
 
 // 🔥 CONFIGURATION 🔥
@@ -22,8 +24,6 @@ const QUESTION_MAP = {
   'social_planning': '遊びの予定は、当日や前日の急なお誘いでも嬉しい',
   'messaging_urgency': 'メッセージが来たら、すぐに返信しないと落ち着かない'
 };
-import heartIcon from './heart.png';
-import targetIcon from './target.png';
 // Helper: Tiered Selection (Best matches, minimum 3)
 function selectActiveMatches(allMatches) {
   if (!allMatches || allMatches.length === 0) return [];
