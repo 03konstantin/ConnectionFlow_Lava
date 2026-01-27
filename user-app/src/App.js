@@ -382,7 +382,7 @@ function App() {
               className="tutorial-next-btn fade-in"
               onClick={() => setCurrentStep(-1)}
             >
-              質問の答えへ
+              つぎへ
             </button>
           )}
         </div>
