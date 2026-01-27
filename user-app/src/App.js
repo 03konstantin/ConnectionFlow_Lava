@@ -341,9 +341,10 @@ function App() {
       <div className="App tutorial-screen-container">
         {/* No waves, no sand. Just gradient background handled by CSS class 'tutorial-screen-container' */}
 
-        <div className="tutorial-content">
-          <h1 className="welcome-title" style={{ marginBottom: '20px', color: 'white' }}>つながりの海</h1>
+        {/* Title moved out to act as Header, pushing Content down to true center */}
+        <h1 className="welcome-title tutorial-title">つながりの海</h1>
 
+        <div className="tutorial-content">
           <div className="carousel-container">
             {/* Left Arrow */}
             <div className={`arrow-btn ${tutorialIndex === 0 ? 'hidden' : ''}`} onClick={handlePrevSlide}>
@@ -364,7 +365,7 @@ function App() {
             </div>
           </div>
 
-          <p className="tutorial-text" style={{ minHeight: '60px', color: 'white' }}>{currentSlide.text}</p>
+          <p className="tutorial-text" style={{ color: 'white' }}>{currentSlide.text}</p>
 
           {/* Dots */}
           <div className="dots-container">
@@ -374,25 +375,17 @@ function App() {
           </div>
         </div>
 
-        {/* Fixed Button Container at Bottom Screen */}
-        {tutorialIndex === tutorialSlides.length - 1 && (
-          <div style={{ position: 'absolute', bottom: '60px', width: '100%', display: 'flex', justifyContent: 'center', zIndex: 30 }}>
+        {/* Flexible Button Container - Always rendered to preserve layout stability */}
+        <div className="tutorial-btn-wrapper">
+          {tutorialIndex === tutorialSlides.length - 1 && (
             <button
-              className="welcome-start-btn fade-in"
-              style={{
-                borderColor: 'white',
-                color: '#5BCACA',
-                background: 'white',
-                margin: 0,
-                width: '80%',
-                maxWidth: '300px'
-              }}
+              className="tutorial-next-btn fade-in"
               onClick={() => setCurrentStep(-1)}
             >
               質問の答えへ
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }

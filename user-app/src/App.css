@@ -9,6 +9,13 @@ html,
   font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
   background: #fdfdfd;
   color: #333;
+  overscroll-behavior: none;
+  /* Prevent rubber-banding */
+  touch-action: pan-y;
+  /* Allow vertical scroll, block horizontal swipe nav */
+  overflow-x: hidden;
+  /* Strictly prevent side-scroll stripes */
+  position: relative;
 }
 
 .App {
@@ -146,6 +153,7 @@ p {
   gap: 10px;
 }
 
+
 .circle-option {
   border-radius: 50%;
   background: transparent;
@@ -153,29 +161,32 @@ p {
   transition: all 0.2s ease;
   border-style: dotted;
   border-width: 3px;
+  flex-shrink: 0;
+  /* Prevent squashing into oval */
 }
 
 /* Sizes */
 .option-0,
 .option-4 {
-  width: 64px;
-  height: 64px;
+  width: 58px;
+  /* Reduced ~10% */
+  height: 58px;
 }
 
 /* Big */
 .option-1,
 .option-3 {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  /* Reduced ~10% */
+  height: 48px;
 }
 
 /* Medium */
 .option-2 {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  /* Reduced ~10% */
+  height: 40px;
 }
-
-/* Small */
 
 /* Colors & Borders */
 /* Left (0, 1): Redish */
@@ -369,12 +380,40 @@ p {
   transition: transform 0.2s, background-color 0.2s;
   box-sizing: border-box;
   /* Include border in width */
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 .welcome-start-btn:hover {
   transform: translateY(-2px);
   background-color: #4aa3be;
+}
+
+/* Responsive Welcome Screen for Small Screens (iPhone SE etc) */
+@media (max-height: 750px) {
+  .welcome-content {
+    margin-top: 52% !important;
+    gap: 4px !important;
+  }
+
+  .welcome-title {
+    margin-bottom: 2px !important;
+  }
+
+  .welcome-text {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0;
+    margin-bottom: 0 !important;
+    width: 95%;
+  }
+
+  .welcome-start-btn {
+    padding: 10px 0;
+    font-size: 14px;
+    margin-top: 5px !important;
+    width: 85%;
+    border-width: 3px;
+  }
 }
 
 /* Tutorial Screen specifics */
@@ -384,23 +423,36 @@ p {
   background: #fffae6;
 }
 
-.next-wave-container {
-  top: 0;
-  /* Align to top */
-  z-index: 5;
-  /* Ensure above sea/background */
+
+/* Separated Tutorial Title */
+.tutorial-title {
+  color: white !important;
+  margin-top: 100px !important;
+  /* Fixed Header Position */
+  margin-bottom: 10px !important;
+  z-index: 20;
+  position: relative;
+  text-align: center;
+}
+
+@media (max-height: 700px) {
+  .tutorial-title {
+    margin-top: 100px !important;
+    /* Compressed top margin for SE */
+  }
 }
 
 .tutorial-content {
-  margin-top: 15%;
-  /* Adjusted from 50% to move content up */
+  margin: auto 0;
+  /* Center in remaining space (Between Title and Footer) */
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
   position: relative;
   z-index: 20;
-  /* Ensure on top of waves */
+  flex-grow: 0;
 }
 
 .carousel-container {
@@ -408,6 +460,7 @@ p {
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin-top: 150px;
   margin-bottom: 20px;
 }
 
@@ -490,13 +543,18 @@ p {
 }
 
 /* Redesign Styles */
+/* Redesign Styles */
 .tutorial-screen-container {
   /* Tutorial Background Gradient */
   background: linear-gradient(#5BCACA, #60BAE0);
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  /* Fallback */
+  height: 100dvh;
+  /* Dynamic Viewport Height for Mobile */
   position: relative;
   overflow: hidden;
+  /* NO SCROLLING as requested */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -661,4 +719,443 @@ p {
 
 .nickname-input::placeholder {
   color: #ccc;
+}
+
+/* Tutorial Button Variant (White with Blue Dots) */
+.tutorial-next-btn {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5BCACA;
+  /* Blue text */
+  background-color: #fff;
+  /* White bg */
+  border: 4px dotted #5BCACA;
+  /* Same blue dots */
+  border-radius: 15px;
+  padding: 16px 0;
+  width: 90%;
+  max-width: 320px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  box-sizing: border-box;
+  /* margin-top will be handled by container */
+}
+
+.tutorial-next-btn:hover {
+  transform: translateY(-2px);
+  background-color: #f8faff;
+}
+
+/* Flex Container for Button - FIXED HEIGHT to prevent jumping */
+.tutorial-btn-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-grow: 0;
+  flex-shrink: 0;
+  /* Never shrink */
+  align-items: center;
+  /* Center button in the footer area */
+  padding-bottom: 0;
+  z-index: 30;
+  height: 110px;
+  /* Fixed height reserved area */
+  min-height: 110px;
+}
+
+/* Responsive adjustments for SMALL screens (iPhone SE, 8, 7: ~667px or less) */
+@media (max-height: 700px) {
+  .tutorial-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    gap: 5px !important;
+    justify-content: center !important;
+    /* Returned to visual center */
+    flex-grow: 1;
+  }
+
+  .slide-image-wrapper {
+    width: 110px;
+    height: 110px;
+    border-radius: 12px;
+    margin: 0 5px;
+  }
+
+  .arrow-btn svg {
+    transform: scale(0.7);
+  }
+
+  .carousel-container {
+    margin-bottom: 2px;
+  }
+
+  .welcome-title {
+    font-size: 18px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .tutorial-text {
+    font-size: 13px;
+    margin-bottom: 8px;
+    min-height: auto !important;
+    line-height: 1.25;
+    width: 90%;
+  }
+
+  .dots-container {
+    margin-bottom: 5px;
+  }
+
+  .tutorial-btn-wrapper {
+    padding-bottom: 10px;
+    height: 80px !important;
+    /* STRICTLY FIXED means no jumping when button appears */
+    min-height: 80px !important;
+    max-height: 80px !important;
+    flex-grow: 0 !important;
+    align-items: center;
+  }
+
+  .tutorial-next-btn {
+    padding: 10px 0;
+    font-size: 14px;
+    width: 80%;
+    border-width: 3px;
+  }
+}
+
+/* Fallback for SUPER SMALL (iPhone SE 1st gen: 568px) */
+@media (max-height: 580px) {
+  .slide-image-wrapper {
+    width: 90px;
+    height: 90px;
+  }
+
+  .welcome-title {
+    font-size: 16px !important;
+  }
+
+  .tutorial-btn-wrapper {
+    padding-bottom: 10px;
+  }
+}
+
+/* Hide content when surging */
+.fade-out {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+/* Ensure animated waves are on top of sand but below content initially */
+/* But when surging, they cover everything. 
+   We handle this in WaveBackground.css with z-index.
+   Here we just ensure base layering is correct.
+*/
+.sand-section {
+  z-index: 1;
+  /* Lowest */
+}
+
+.welcome-content {
+  z-index: 10;
+  /* Above waves */
+  transition: opacity 0.3s;
+}
+
+/* Cloud Input Container */
+.cloud-input-container {
+  position: relative;
+  background: white;
+  padding: 50px 30px;
+  width: 85%;
+  max-width: 340px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Bumpy "Cloud" shape using radial gradients */
+  background-image:
+    radial-gradient(circle at 100% 100%, transparent 20px, #ffffff 20px),
+    radial-gradient(circle at 0% 100%, transparent 20px, #ffffff 20px),
+    radial-gradient(circle at 100% 0%, transparent 20px, #ffffff 20px),
+    radial-gradient(circle at 0% 0%, transparent 20px, #ffffff 20px);
+
+  /* Actually, let's use a border-radius based approach with a "Cloudy" look 
+      generated by multiple box-shadows or a clip-path. 
+      For robustness, I will use a simple heavily rounded card. 
+      If the user wants exact bumps, I'd need an image.
+      Let's use a very large border-radius to look "soft".
+   */
+  border-radius: 40px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Pseudo-elements for extra cloud bumps */
+.cloud-input-container::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  right: 20px;
+  height: 40px;
+  background: white;
+  border-radius: 50px;
+  z-index: 0;
+}
+
+.cloud-input-container::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 20px;
+  right: 20px;
+  height: 40px;
+  background: white;
+  border-radius: 50px;
+  z-index: 0;
+}
+
+.cloud-blobs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cloud-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/* Styles for the "Send" button */
+.send-btn {
+  margin-top: 40px;
+  background-color: #528BC5;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 15px 50px;
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 80%;
+  max-width: 250px;
+  transition: transform 0.1s;
+}
+
+.send-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.back-arrow-btn {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  z-index: 20;
+}
+
+.nickname-label {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.nickname-input {
+  border: none;
+  border-bottom: 2px dashed #999;
+  background: transparent;
+  font-size: 24px;
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  outline: none;
+  color: #555;
+  font-family: inherit;
+}
+
+.nickname-input::placeholder {
+  color: #ccc;
+}
+
+/* Tutorial Button Variant (White with Blue Dots) */
+.tutorial-next-btn {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5BCACA;
+  /* Blue text */
+  background-color: #fff;
+  /* White bg */
+  border: 4px dotted #5BCACA;
+  /* Same blue dots */
+  border-radius: 15px;
+  padding: 16px 0;
+  width: 90%;
+  max-width: 320px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  box-sizing: border-box;
+  /* margin-top will be handled by container */
+}
+
+.tutorial-next-btn:hover {
+  transform: translateY(-2px);
+  background-color: #f8faff;
+}
+
+/* Flex Container for Button */
+.tutorial-btn-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* Flex: occupy space to push button down, but valid in flow */
+  flex-grow: 1;
+  align-items: flex-end;
+  padding-bottom: 50px;
+  /* Base padding */
+  z-index: 30;
+  min-height: 80px;
+  /* Reserve space */
+}
+
+/* Responsive adjustments for smaller screens (iPhone 7/8/SE gen2: 667px height) */
+@media (max-height: 750px) {
+  .tutorial-content {
+    margin-top: 20px;
+    /* Drastically reduce top margin (was 15%) */
+    justify-content: center;
+  }
+
+  .slide-image-wrapper {
+    width: 180px;
+    /* Smaller image */
+    height: 180px;
+    border-radius: 15px;
+  }
+
+  .carousel-container {
+    margin-bottom: 10px;
+  }
+
+  .welcome-title {
+    font-size: 22px;
+    /* Smaller title */
+    margin-bottom: 10px !important;
+  }
+
+  .tutorial-text {
+    font-size: 14px;
+    margin-bottom: 5px;
+    min-height: 45px !important;
+    line-height: 1.4;
+  }
+
+  .dots-container {
+    margin-bottom: 10px;
+  }
+
+  .tutorial-btn-wrapper {
+    padding-bottom: 20px;
+    /* Reduce bottom padding */
+  }
+
+  .tutorial-next-btn {
+    padding: 12px 0;
+    /* Compact button */
+    font-size: 15px;
+  }
+}
+
+/* ========================================= */
+/* NARROW SCREEN OVERRIDES (Use max-width)   */
+/* ========================================= */
+
+/* 1. Welcome Screen (< 380px Width) */
+@media (max-width: 380px) {
+  .welcome-title {
+    font-size: 24px !important;
+    /* Smaller size to avoid wave overlap */
+    margin-bottom: 5px !important;
+  }
+
+  .welcome-content {
+    gap: 5px !important;
+    /* Decrease distance between elements */
+  }
+
+  .welcome-text {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 5px !important;
+  }
+
+  .welcome-text p {
+    margin-bottom: 20px !important;
+  }
+}
+
+/* 2. Question Screen (< 390px Width) */
+@media (max-width: 390px) {
+
+  /* Shrink Question Text */
+  .question-text {
+    font-size: 16px !important;
+    /* Smaller text */
+    margin-bottom: 20px !important;
+  }
+
+  /* Shrink Circles by ~15-20% */
+  .option-0,
+  .option-4 {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .option-1,
+  .option-3 {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .option-2 {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  /* Adjust Container Spacing */
+  .circles-row {
+    gap: 6px !important;
+  }
+
+  .card {
+    padding: 30px 15px !important;
+    /* Reduce padding to fit content */
+  }
 }
