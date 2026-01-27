@@ -411,21 +411,25 @@ html,
   }
 
   /* Apply border-box for correct width calculation */
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
   /* Force 80mm width paper logic */
   @page {
     margin: 0;
-    size: 80mm auto; /* Explicitly tell printer this is 80mm paper */
+    size: 80mm auto;
+    /* Explicitly tell printer this is 80mm paper */
   }
 
   body {
     background: white;
     margin: 0;
     padding: 0;
-    width: 80mm; /* Enforce body width */
+    width: 80mm;
+    /* Enforce body width */
     color: black;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -437,9 +441,10 @@ html,
        Printers usually have ~72mm printable area. 
        Slightly reduce max-width to be safe or keep 100% of body. 
     */
-    max-width: 80mm; 
-    margin: 0; 
-    padding: 5px 2px; /* Minimal padding, let margins handle it if needed */
+    max-width: 80mm;
+    margin: 0;
+    padding: 20px 25px;
+    /* Minimal padding, let margins handle it if needed */
     font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
     font-size: 12px;
     font-weight: 600;
@@ -553,14 +558,14 @@ html,
   }
 
   .r-divider-line {
-    text-align: center;
+    width: 100%;
+    margin: 10px 0;
+    border-bottom: 2px dashed black;
+    /* Real dashed line */
+    height: 1px;
+    color: transparent;
+    /* Hide text if any */
     overflow: hidden;
-    white-space: nowrap;
-    margin: 8px 0;
-    font-weight: bold;
-    font-family: monospace;
-    letter-spacing: -2px;
-    font-size: 10px;
   }
 
   /* --- FOOTER --- */
@@ -596,5 +601,12 @@ html,
     /* Reduced from 10px */
     font-weight: bold;
     margin: 1px 0;
+  }
+
+  .r-date-footer {
+    font-size: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #000;
   }
 }

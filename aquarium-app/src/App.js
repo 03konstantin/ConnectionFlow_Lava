@@ -1024,7 +1024,6 @@ function App() {
               <div className="r-spacer-large"></div>
 
               <h2 className="r-greeting">イツカ イッショニ シゴト デキタラ イイナ！</h2>
-              <p className="r-date">{new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
             </div>
 
             {/* --- COMPATIBLE PARTNERS --- */}
@@ -1080,7 +1079,7 @@ function App() {
                       <div className="r-hearts">
                         <span>*****</span>
                       </div>
-                      <div className="r-pay-line">0 AW-Pay</div>
+                      <div className="r-pay-line">{matchedStudents.surprising.number} AW-Pay</div>
                     </div>
                   </div>
                 </div>
@@ -1090,6 +1089,7 @@ function App() {
 
             {/* --- FOOTER --- */}
             <div className="r-footer">
+              <p className="r-date-footer">{new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
               <h3 className="r-footer-msg">ゴライジョウ アリガトウゴザイマシタ</h3>
 
               {/* Logo Image */}
