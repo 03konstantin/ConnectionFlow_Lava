@@ -293,7 +293,7 @@ function App() {
           </div>
 
           <div className="welcome-text">
-            <p>５つの質問に答えるだけで、<br />あなたの考え方に近い学生とマッチングできます。</p>
+            <p>５つの質問に答えるだけで、<br />あなたの考え方に近い学生と<br />マッチングできます。</p>
             <p>自分と一番近いのはどんな学生なのか、<br />ぜひ実際に体験して見つけてみてください。</p>
           </div>
           <button className="welcome-start-btn" onClick={handleStartWave}>
@@ -308,8 +308,8 @@ function App() {
   if (currentStep === -1.5) {
     const tutorialSlides = [
       { img: smartphoneImg, text: 'ニックネームを入力して、５つの質問に答える' },
-      { img: aquariumImg, text: '大きいモニタにマッチングした学生を確認する' },
-      { img: gakuseiImg, text: '学生の作品プレゼンを聞きに行く' }
+      { img: aquariumImg, text: 'モニタにマッチングした学生をチェック' },
+      { img: gakuseiImg, text: '学生の作品プレゼンに会いに行く' }
     ];
 
     const handleNextSlide = () => {
@@ -460,13 +460,14 @@ function App() {
           </div>
 
           <div className="confirmation-text">
-            あなたと近い学生が見つかりました。<br />
-            画面をご確認ください。
+            あなたと考え方が近い学生が見つかりました。<br />
+            モニターをご確認ください。
           </div>
 
           <div className="confirmation-text">
+            自分のお名前をダブルクリックしたら、<br />
             マッチングの結果を<br />
-            ダブルクリックして印刷できます。
+            お持ち帰ることができます。
           </div>
         </div>
 

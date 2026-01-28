@@ -401,11 +401,11 @@ html,
   /* SHOW RECEIPT */
   .receipt-container {
     display: block !important;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: auto;
     background: white;
     z-index: 99999;
   }
@@ -420,7 +420,7 @@ html,
   /* Force 80mm width paper logic */
   @page {
     margin: 0;
-    size: 80mm auto;
+    size: 80mm;
     /* Explicitly tell printer this is 80mm paper */
   }
 
@@ -429,6 +429,7 @@ html,
     margin: 0;
     padding: 0;
     width: 80mm;
+    height: auto;
     /* Enforce body width */
     color: black;
     -webkit-print-color-adjust: exact;
@@ -443,7 +444,9 @@ html,
     */
     max-width: 80mm;
     margin: 0;
-    padding: 20px 25px;
+    padding: 20px 10px;
+    page-break-inside: avoid;
+    break-inside: avoid;
     /* Minimal padding, let margins handle it if needed */
     font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
     font-size: 12px;
@@ -496,7 +499,7 @@ html,
 
   /* --- SECTIONS --- */
   .r-section {
-    margin-bottom: 13px;
+    padding-bottom: 25px;
     /* Reduced from 15px */
   }
 
@@ -506,22 +509,27 @@ html,
     font-size: 12px;
     /* Reduced from 16px */
     font-weight: 900;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
   }
 
   .r-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 11px;
-    /* Reduced from 12px */
+    /* Align Name with AW Pay baseline */
+    margin-bottom: 45px;
     padding: 0 5px;
+    line-height: 1;
+    /* Enforce strict line height */
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .r-row-left {
     display: flex;
     align-items: baseline;
     gap: 4px;
+    line-height: 1;
   }
 
   .r-table-no {
@@ -529,18 +537,21 @@ html,
     /* Reduced from 12px */
     font-weight: bold;
     white-space: nowrap;
+    line-height: 1;
   }
 
   .r-name-katakana {
     font-size: 11px;
     /* Reduced from 14px */
     font-weight: 900;
+    line-height: 1;
   }
 
   .r-row-right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    line-height: 1;
   }
 
   .r-hearts {
@@ -548,30 +559,35 @@ html,
     /* Reduced from 16px */
     letter-spacing: 1px;
     line-height: 1;
-    margin-bottom: 1px;
+    margin-bottom: 3px;
+    /* Slightly increased from 1px for visual balance */
+  }
+
+  .r-surprising-stars {
+    margin-bottom: -2px;
+    /* Adjusted cause of alignment change */
   }
 
   .r-pay-line {
     font-size: 9px;
     /* Reduced from 12px */
     font-weight: bold;
+    line-height: 1;
   }
 
   .r-divider-line {
     width: 100%;
-    margin: 10px 0;
+    margin: 35px 0;
     border-bottom: 2px dashed black;
-    /* Real dashed line */
     height: 1px;
     color: transparent;
-    /* Hide text if any */
     overflow: hidden;
   }
 
   /* --- FOOTER --- */
   .r-footer {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 30px;
     padding-bottom: 20px;
     display: flex;
     flex-direction: column;

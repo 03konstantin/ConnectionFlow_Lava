@@ -280,8 +280,8 @@ function App() {
   useEffect(() => {
     const checkInterval = setInterval(() => {
       const now = Date.now();
-      const FADE_THRESHOLD = 90 * 1000; // 1.5 minutes (90s)
-      const WARN_THRESHOLD = 80 * 1000; // Warning at 80s (10s before exp)
+      const FADE_THRESHOLD = 180 * 1000; // 1.5 minutes (90s)
+      const WARN_THRESHOLD = 170 * 1000; // Warning at 80s (10s before exp)
 
       setCards(prevCards => {
         let changed = false;
@@ -712,7 +712,7 @@ function App() {
 
     if (isNew && isVisitor) {
       processNewCard(card.id);
-      addNotification('New Visitor', `${card.visitor_name} つながりの海へようこそ。`, 'info');
+      addNotification('新規来場者', `${card.visitor_name} つながりの海へようこそ。`, 'info');
       // Play Sound
       newVisitorSoundRef.current.currentTime = 0;
       safePlay(newVisitorSoundRef);
@@ -776,12 +776,12 @@ function App() {
 
     if (addedKey) {
       const readableQuestion = QUESTION_MAP[addedKey] || 'ある質問';
-      addNotification('Update', `${newCard.visitor_name}が回答: 「${readableQuestion}」`, 'success');
+      addNotification('つながり！', `${newCard.visitor_name}が回答: 「${readableQuestion}」`, 'success');
     }
     previousDataRef.current.set(newCard.id, JSON.stringify(newVector));
   };
 
-  // ... (Clustering and Supabase Effect remain same) ...
+
   // --- CLUSTERING CALCULATION (Pre-calc) ---
   const calculateStudentClusters = async (studentList) => {
     // Very simple N^2 check. 100 * 100 = 10,000. Easy for JS.
@@ -993,7 +993,7 @@ function App() {
                               handlePrintRequest(d);
                             }}
                           >
-                            印刷
+                            ポチッと
                           </button>
                         )}
                       </div>
@@ -1074,7 +1074,7 @@ function App() {
                       <span className="r-name-katakana">{matchedStudents.surprising.name}</span>
                     </div>
                     <div className="r-row-right">
-                      <div className="r-hearts">
+                      <div className="r-hearts r-surprising-stars">
                         <span style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '3px', lineHeight: '1' }}>*****</span>
                       </div>
                       <div className="r-pay-line">{matchedStudents.surprising.number} AW-Pay</div>
