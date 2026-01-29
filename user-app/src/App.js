@@ -62,6 +62,7 @@ function App() {
   const [axes, setAxes] = useState([]); // Randomized axes
   const [currentStep, setCurrentStep] = useState(-2); // -2: Welcome, -1.5: Tutorial, -1: Name Input, 0-4: Questions, 6: Done
   const [tutorialIndex, setTutorialIndex] = useState(0);
+  const [tutorialTouchStart, setTutorialTouchStart] = useState(null);
   const [cardId, setCardId] = useState(null);
   // Current selection index: 0 to 4 (5 options)
   const [currentSelection, setCurrentSelection] = useState(null);
@@ -294,7 +295,7 @@ function App() {
 
           <div className="welcome-text">
             <p>５つの質問に答えるだけで、<br />あなたの考え方に近い学生と<br />マッチングできます。</p>
-            <p>自分と一番近いのはどんな学生なのか、<br />ぜひ実際に体験して<br />見つけてみてください。</p>
+            <p>自分と近いのはどんな学生なのか、<br />見つけてみてください。</p>
           </div>
           <button className="welcome-start-btn" onClick={handleStartWave}>
             あたらしい出会いを見つける
@@ -328,8 +329,31 @@ function App() {
 
     const currentSlide = tutorialSlides[tutorialIndex];
 
+    const handleTutorialTouchStart = (e) => {
+      setTutorialTouchStart(e.touches[0].clientX);
+    };
+
+    const handleTutorialTouchEnd = (e) => {
+      if (!tutorialTouchStart) return;
+      const touchEnd = e.changedTouches[0].clientX;
+      const diff = tutorialTouchStart - touchEnd;
+
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          handleNextSlide();
+        } else {
+          handlePrevSlide();
+        }
+      }
+      setTutorialTouchStart(null);
+    };
+
     return (
-      <div className="App tutorial-screen-container">
+      <div
+        className="App tutorial-screen-container"
+        onTouchStart={handleTutorialTouchStart}
+        onTouchEnd={handleTutorialTouchEnd}
+      >
         {/* No waves, no sand. Just gradient background handled by CSS class 'tutorial-screen-container' */}
 
         {/* Title moved out to act as Header, pushing Content down to true center */}

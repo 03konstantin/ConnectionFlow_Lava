@@ -402,7 +402,7 @@ p {
 
 .welcome-title {
   font-family: 'Zen Maru Gothic', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
   color: #000;
   margin: 0;
@@ -413,8 +413,14 @@ p {
   font-size: 14px;
   font-weight: 1000;
   color: #000;
-  line-height: 3;
+  line-height: 1.3;
   letter-spacing: 0.1em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.welcome-text p {
+  margin-bottom: 16px;
 }
 
 .welcome-start-btn {
@@ -427,11 +433,11 @@ p {
   /* Dotted white border */
   border-radius: 15px;
   /* Rounded rectangle */
-  padding: 16px 0;
+  padding: 16px 24px;
   /* Vertical padding */
   width: 90%;
   /* Responsive width */
-  max-width: 320px;
+  max-width: 400px;
   /* Max width constraint */
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -439,6 +445,12 @@ p {
   box-sizing: border-box;
   /* Include border in width */
   margin-top: 0px;
+  white-space: nowrap;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .welcome-start-btn:hover {
@@ -466,10 +478,10 @@ p {
   }
 
   .welcome-start-btn {
-    padding: 10px 0;
+    padding: 10px 24px;
     font-size: 14px;
     margin-top: 5px !important;
-    width: 85%;
+    width: 95%;
     border-width: 3px;
   }
 }
@@ -800,7 +812,7 @@ p {
   }
 
   .welcome-title {
-    font-size: 18px !important;
+    font-size: 24px;
     margin-bottom: 2px !important;
   }
 
@@ -842,7 +854,7 @@ p {
   }
 
   .welcome-title {
-    font-size: 16px !important;
+    font-size: 24px;
   }
 
   .tutorial-btn-wrapper {
@@ -1021,8 +1033,7 @@ p {
   }
 
   .welcome-title {
-    font-size: 22px;
-    /* Smaller title */
+    font-size: 24px;
     margin-bottom: 10px !important;
   }
 

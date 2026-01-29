@@ -280,8 +280,8 @@ function App() {
   useEffect(() => {
     const checkInterval = setInterval(() => {
       const now = Date.now();
-      const FADE_THRESHOLD = 180 * 1000; // 1.5 minutes (90s)
-      const WARN_THRESHOLD = 170 * 1000; // Warning at 80s (10s before exp)
+      const FADE_THRESHOLD = 360 * 1000; // 1.5 minutes (90s)
+      const WARN_THRESHOLD = 350 * 1000; // Warning at 80s (10s before exp)
 
       setCards(prevCards => {
         let changed = false;
