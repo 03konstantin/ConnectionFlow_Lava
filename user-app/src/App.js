@@ -38,7 +38,7 @@ const rawAxes = [
     key: 'menu_selection_style',
     labelLeft: 'そう思わない',
     labelRight: 'そう思う',
-    question: '私はメニューを選ぶときは、直感でパッと決める',
+    question: '私はレストランでメニューを選ぶときは、直感でパッと決める',
     name: 'メニュー選択'
   },
   {
@@ -294,7 +294,7 @@ function App() {
 
           <div className="welcome-text">
             <p>５つの質問に答えるだけで、<br />あなたの考え方に近い学生と<br />マッチングできます。</p>
-            <p>自分と一番近いのはどんな学生なのか、<br />ぜひ実際に体験して見つけてみてください。</p>
+            <p>自分と一番近いのはどんな学生なのか、<br />ぜひ実際に体験して<br />見つけてみてください。</p>
           </div>
           <button className="welcome-start-btn" onClick={handleStartWave}>
             あたらしい出会いを見つける

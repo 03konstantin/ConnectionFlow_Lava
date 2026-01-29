@@ -993,7 +993,7 @@ function App() {
                               handlePrintRequest(d);
                             }}
                           >
-                            ポチッと
+                            出会う
                           </button>
                         )}
                       </div>
