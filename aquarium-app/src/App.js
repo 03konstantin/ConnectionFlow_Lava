@@ -903,7 +903,8 @@ function App() {
 
         {Array.from(cards.values()).map(body => {
           const d = body.cardData;
-          const isExpanded = expandedId === d.id;
+          // const isExpanded = expandedId === d.id; // MOVED TO INLINE CHECK VIA dbId
+          const isExpanded = expandedId === body.dbId; // FIX: Sync with new logic for child render
           const isFading = body.isFading; // Get fading state
 
           return (
@@ -915,7 +916,7 @@ function App() {
               }}
               // Add variant class AND fading class
               className={
-                (d.type === 'visitor' ? 'card-body visitor' : `card-body ${d.type} variant-${d.blobVariant || 1} ${isExpanded ? 'expanded' : ''}`) +
+                (d.type === 'visitor' ? 'card-body visitor' : `card-body ${d.type} variant-${d.blobVariant || 1} ${expandedId === body.dbId ? 'expanded' : ''}`) +
                 (isFading ? ' fading' : '') +
                 (body.isFlickering ? ' flickering' : '')
               }
@@ -929,7 +930,8 @@ function App() {
 
                   if (now - lastTime < 300) {
                     // DOUBLE CLICK DETECTED
-                    setExpandedId(expandedId === d.id ? null : d.id);
+                    // FIX: Use body.dbId (unique) instead of d.id (raw int)
+                    setExpandedId(expandedId === body.dbId ? null : body.dbId);
                     lastClickRef.current[d.id] = 0; // Reset
                   } else {
                     // SINGLE CLICK
